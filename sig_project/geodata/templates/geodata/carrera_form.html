@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div  style="background: rgba(8, 52, 97, 0.9); height: 8vh; width: 100%;">
+</div>
+
+    <div class="row form-row">
+        <div class="col-md-7">
+            <form method="POST" class="form-create" enctype="multipart/form-data">
+                {% csrf_token %}
+                <h2>{% if carrera.pk %}Editar{% else %}Crear{% endif %} carrera</h2>
+                {% for field in form %}
+                <div class="form-group-inline">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label_tag }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="error">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                <!-- Hidden fields for latitude and longitude -->
+                <input type="hidden" id="id_latitud" name="latitud" value="{{ carrera.latitud|default:'' }}">
+                <input type="hidden" id="id_longitud" name="longitud" value="{{ carrera.longitud|default:'' }}">
+    
+                <button type="submit" class="btn btn-primary btn-submit">
+                    Guardar <i class="bx bx-plus"></i>
+                </button>
+            </form>
+        </div>
+        <div class="col-md-5">
+            <div id="map" class="map-container"></div>
+        </div>
+    </div>
+
+
+<script>
+    var map = L.map('map').setView([{{ carrera.latitud|default:-17.9677 }}, {{ carrera.longitud|default:-67.11 }}], 14);  // Vista inicial en el punto si existe
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    var marker = L.marker([{{ carrera.latitud|default:-17.9677 }}, {{ carrera.longitud|default:-67.11 }}], {
+        draggable: true
+    }).addTo(map);
+
+    // Actualiza los campos ocultos con la nueva posición si se mueve el marcador
+    marker.on('dragend', function (e) {
+        var latlng = marker.getLatLng();
+        document.getElementById('id_latitud').value = latlng.lat;
+        document.getElementById('id_longitud').value = latlng.lng;
+    });
+</script>
+
+
+<a href="{% url 'carrera_list' %}" style="color: rgb(0, 208, 255);"><i class="bx bx-arrow-back"></i>Volver a la lista</a>
+{% endblock %}

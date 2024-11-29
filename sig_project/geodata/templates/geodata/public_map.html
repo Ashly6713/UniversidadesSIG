@@ -1,0 +1,357 @@
+<!-- templates/geodata/public_map.html -->
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .form-inline {
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px;
+        background-color: #253564; 
+        box-shadow: 0 0 1em hsla(231, 40%, 51%, 0.736);
+        border-radius: 10px;
+        color: #fffafa;
+    }
+    .form-inline select,
+    .form-inline input,
+    .form-inline button {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    .form-inline select,
+    .form-inline input {
+        background: #8babd940;
+    }
+    .form-inline button {
+        background-color: #6fa6e096;
+        color: white;
+        cursor: pointer;
+    }
+    .form-inline button:hover {
+        background-color: #0057b3c2;
+    }
+</style>
+<!-- estrellas -->
+<style>
+    .estrellas {
+      position: relative;
+      display: inline-block;
+      font-size: 24px;
+    }
+  
+    /* Fondo de estrellas (estrellas vacías) */
+    .estrellas .estrellas-fondo {
+      color: #e4e5e9; /* Color gris para estrellas vacías */
+    }
+  
+    /* Estrellas rellenas (color amarillo) */
+    .estrellas .estrellas-fraccion {
+      color: #ffc107; /* Color amarillo */
+      position: absolute;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  </style>
+
+  <!-- Sección 1: Bienvenida -->
+  <section class="welcome-section">
+    <div class="welcome-overlay">
+      <h1>Bienvenido al Geoportal de Universidades</h1>
+      <p>
+        Descubre un mundo de opciones académicas a través de un sistema de información geográfica avanzado 
+        que te permite encontrar la universidad, facultad o carrera ideal para ti.
+      </p>
+    </div>
+  </section>
+
+<!-- Sección 2: Mapa interactivo -->
+<section class="map-section">
+    <div id="map-container">
+        <div id="map" style="width: 100%; height: 100vh;"></div>
+    </div>
+</section>
+
+
+<!-- Contenedor flotante para detalles del marcador -->
+<div id="popup-details" style="display: none;">
+    <div id="popup-content">
+        <button onclick="closePopup()"><i class='bx bx-minus'></i></button>
+        <div id="popup-inner-content"></div>
+    </div>
+</div>
+</section>
+
+<!-- <div class="row">
+    <div class="col-md-9">
+        
+    </div>
+    <div class="col-md-3">
+        <form  class="form-inline" method="get" action="{% url 'home' %}">
+            <input type="radio" id="universidad" name="tipo" value="universidad" checked> <i class='bx bx-buildings nav_icon'></i>
+            <input type="radio" id="facultad" name="tipo" value="facultad"> <i class='bx bxs-graduation nav_icon'></i>
+            <input type="radio" id="carrera" name="tipo" value="carrera"> <i class='bx bx-book nav_icon'></i>
+        
+            <input type="text" name="nombre" id="nombre" placeholder="Nombre o descripción" style="width: 100%;">
+            
+            <input type="radio" name="modalidad" value="anual"><i class="bx bx-calendar"></i> Anual
+            <input type="radio" name="modalidad" value="semestral"><i class="bx bx-calendar-check"></i> Semestral
+        
+            <input type="number" name="costo_min" id="costo_min" placeholder="Costo mínimo" style="width: 49%;">
+            <input type="number" name="costo_max" id="costo_max" placeholder="Costo máximo" style="width: 49%;">
+
+           
+            <label for=""><i class='bx bx-map nav_icon'></i>Bucar por distancia  </label>
+            <input type="number" name="rango_km" id="rango_km" style="width: 45%;" placeholder="Rango en km">
+            <input type="hidden" name="lat" id="lat">
+            <input type="hidden" name="lng" id="lng">
+
+        
+            <input type="radio" id="publica" name="tipo_universidad" value="pública" onchange="this.form.submit()"> Pública
+            <input type="radio" id="privada" name="tipo_universidad" value="privada" onchange="this.form.submit()"> Privada
+            <input type="radio" id="ambas" name="tipo_universidad" value="" onchange="this.form.submit()"> Ambas
+        </form>
+    </div>
+</div>
+ -->
+
+
+<!-- Sección 3: Slider -->
+<section class="card-slider-section">
+  <div class="container">
+    <div id="demo" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="carousel-caption">
+              <div id="image-caption">Búsqueda Avanzada</div>
+              <p>Nuestro sistema te permite filtrar universidades y facultades según tus preferencias, como ubicación, costos y más, facilitando la búsqueda de la opción que mejor se adapte a tus necesidades.
+              </p>
+              <img src="/media/marker/carrera.png">
+              
+            </div>   
+          </div>
+          <div class="carousel-item">
+            <div class="carousel-caption">
+              <div id="image-caption">Ranking de Universidades</div>
+              <p>Consulta los rankings de universidades a nivel nacional e internacional para tomar decisiones informadas basadas en la calidad educativa y la reputación de las instituciones.</p>
+                <img src="/media/marker/faculty.png" class="img-fluid">
+                
+            </div>   
+          </div>
+          <div class="carousel-item">
+            <div class="carousel-caption">
+              <div id="image-caption">Comparativa de carreras</div>
+              <p>Compara diferentes carreras y sus planes de estudios en diversas universidades para encontrar la que más se alinee con tus objetivos profesionales y académicos.</p>
+                <img src="/media/marker/university.png" class="img-fluid">
+                
+            </div>   
+          </div>
+        </div>
+        <a class="carousel-control-prev" href="#demo" data-slide="prev">
+          <i class='fas fa-arrow-left'></i>
+        </a>
+        <a class="carousel-control-next" href="#demo" data-slide="next">
+          <i class='fas fa-arrow-right'></i>
+        </a>
+      </div>
+      
+  </div>
+</section>
+
+
+
+<!-- Sección 4: Funcionalidades y guía -->
+<section class="features-section">
+  <div class="features">
+    <strong><h2>Funcionalidades Innovadoras</h2></strong>
+    <div class="feature">
+      <img src="media/imagenes/universidades/uto.jpg" alt="Funcionalidad 1">
+      <b>Filtros Personalizados</b>
+      <p>Utiliza filtros específicos para acotar tu búsqueda según ubicación, tipo de programa, y más, asegurando resultados relevantes y adaptados a tus intereses.</p>
+    </div>
+    <div class="feature">
+      <img src="media/imagenes/universidades/uniorf.png" alt="Funcionalidad 2">
+      <b>Acceso a Datos Actualizados</b>
+      <p>Mantente informado con datos actualizados sobre las universidades y carreras, lo que te permitirá tomar decisiones basadas en la información más reciente.</p>
+    </div>
+    <div class="feature">
+      <img src="media/imagenes/universidades/UPDS.jpg" alt="Funcionalidad 3">
+      <b>Interfaz Intuitiva</b>
+      <p>Nuestra plataforma está diseñada para ser fácil de usar, permitiendo que cualquier usuario pueda navegar y encontrar información sin complicaciones.</p>
+    </div>
+  </div>
+  <div class="guide">
+    <strong><h2>Guía de uso</h2></strong><br>
+    <div class="cards">
+      <div class="card">
+        <h3>Registro Rápido</h3>
+        <p>Crea una cuenta en minutos para acceder a todas las funcionalidades del geoportal y personalizar tu experiencia de búsqueda..</p>
+      </div>
+      <div class="card">
+        <h3>Búsqueda Efectiva</h3>
+        <p>Introduce tus criterios de búsqueda en los filtros y descubre las opciones que mejor se adaptan a tus necesidades académicas.</p>
+      </div>
+      <div class="card">
+        <h3>Comparación y Selección</h3>
+        <p>Compara las universidades y programas seleccionados, y elige la mejor opción para tu futuro académico.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+
+<script>
+     // Crear el mapa centrado en las coordenadas iniciales
+     const map = L.map('map', {
+            zoom: 14,
+            measureControl: false // Desactivamos inicialmente el control integrado
+        }).setView([-17.972, -67.14], 14);
+
+        // Añadir capa base
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 20,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        // Añadir herramienta de medición personalizada
+        const measureControl = L.control.measure({
+            primaryLengthUnit: 'kilometers', // Unidad primaria
+            secondaryLengthUnit: 'meters',  // Unidad secundaria
+            primaryAreaUnit: undefined,    // Desactiva áreas
+            position: 'topright',           // Posición del control
+            activeColor: '#db4a29',        // Color del polígono activo
+            completedColor: '#9b2d14'      // Color del polígono completado
+        });
+
+        measureControl.addTo(map);
+
+    let popupData = null;
+
+    function showPopup(data) {
+        document.getElementById('popup-details').style.display = 'block';
+        const calificacionPromedio = data.calificacion_promedio;
+        let content = '';
+        if (data.imagen_url) {
+            content += `<img src="${data.imagen_url}" alt="Imagen">`;
+        }
+        content += `<b>Tipo:</b> ${data.tipo}<br>
+                    <b>Nombre:</b> ${data.nombre}<br>
+                    <b>Descripción:</b> ${data.descripcion}<br>`;
+        
+        if (data.modalidad_inscripcion) {
+            content += `<b>Modalidad de Inscripción:</b> ${data.modalidad_inscripcion}<br>`;
+        }
+        if (data.costo_matricula) {
+            content += `<b>Costo de Matrícula:</b> $${data.costo_matricula}<br>`;
+        }
+        content += `<b>Calificación Promedio:</b> ${generarEstrellas(calificacionPromedio) || 'No disponible'}<br>`;
+
+        document.getElementById('popup-inner-content').innerHTML = content;
+    }
+
+    function closePopup() {
+        document.getElementById('popup-details').style.display = 'none';
+        popupData = null;
+    }
+
+    const markerGroup = L.layerGroup().addTo(map);
+
+    function addMarkers(data, icon, map) {
+        data.forEach(function(item) {
+            let marker = L.marker([item.latitud, item.longitud], {icon: icon, title: item.nombre} ).addTo(map);
+            marker.on('click', function() {
+                showPopup(item);
+            });
+             // Añadir el marcador al grupo
+            markerGroup.addLayer(marker);
+        });
+    }
+
+    
+
+    var universidades = {{ universidades_json|safe }};
+    var facultades = {{ facultades_json|safe }};
+    var carreras = {{ carreras_json|safe }};
+
+    // Definir íconos personalizados para universidades, facultades y carreras (asegúrate de tener los iconos `uIcon`, `fIcon`, `cIcon`)
+    addMarkers(universidades, uIcon, map);
+    addMarkers(facultades, fIcon, map);
+    addMarkers(carreras, cIcon, map);
+
+
+</script>
+
+
+
+
+<script>
+
+    let marker1 = L.marker([{{-17.98 }}, {{-67.11 }}], {
+         draggable: true
+     }).addTo(map);
+
+    map.on('click', function (e) {
+        if (marker1) map.removeLayer(marker1); // Quitar marcador anterior
+        marker1 = L.marker(e.latlng).addTo(map);
+        document.getElementById('lat').value = e.latlng.lat;
+        document.getElementById('lng').value = e.latlng.lng;
+    });
+
+    
+
+  // Añadir control de escala
+  L.control.scale({
+            imperial: false, // Mostrar solo en unidades métricas
+            metric: true,    // Habilitar escala métrica
+            maxWidth: 200    // Ancho máximo de la barra de escala
+        }).addTo(map);
+
+    // Añadir el control de búsqueda
+    const searchControl = new L.Control.Search({
+        layer: markerGroup,        // Usar el grupo de marcadores
+        position: 'topleft',    
+        propertyName: 'title',     // Buscar en la propiedad 'title'
+        zoom: 18,                  // Zoom al encontrar un marcador
+        marker: false              // No añadir un marcador adicional
+    });
+
+    // Abrir el popup del marcador encontrado
+    searchControl.on('search:locationfound', function(e) {
+        e.layer.openPopup(); // Abre el popup del marcador encontrado
+    });
+
+    // Añadir el control al mapa
+    map.addControl(searchControl);
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const rangoKm = parseFloat('{{ rango_km|default:"0" }}');
+        const lat = parseFloat('{{ lat|default:"0" }}');
+        const lng = parseFloat('{{ lng|default:"0" }}');
+
+        // Dibujar el círculo si el rango está definido
+        if (rangoKm > 0) {
+            const radiusMeters = rangoKm * 1000; // Convertir a metros
+            const circle = L.circle([lat, lng], {
+                color: 'blue',
+                fillColor: '#add8e6',
+                fillOpacity: 0.4,
+                radius: radiusMeters,
+            }).addTo(map);
+
+            map.fitBounds(circle.getBounds()); // Ajustar la vista del mapa al círculo
+        }
+    });
+
+    
+</script>
+
+{% endblock %}

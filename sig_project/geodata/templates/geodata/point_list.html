@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+    th {
+        cursor: pointer;
+    }
+    #buscarInput {
+        margin-bottom: 10px;
+        padding: 5px;
+        width: 200px;
+    }
+</style>
+
+<h1>Universidades</h1>
+<a href="{% url 'point_create' %}">Crear nuevo punto</a>
+
+<div id="map" style="height: 500px;"></div> <!-- Aquí se mostrará el mapa -->
+
+<script>
+    var map = L.map('map').setView([-17.9233, -67.15], 12); // Establece la vista inicial del mapa
+
+     // Agregar capa de OpenStreetMap
+     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    // Obtener los puntos desde el contexto de la plantilla
+    var points = {{ points_json|safe }};
+
+    // Iterar sobre los puntos y agregar marcadores al mapa
+    points.forEach(function(point) {
+        var marker = L.marker([point.latitude, point.longitude]).addTo(map);
+
+        // Comprobar si el punto tiene una imagen asociada
+        var popupContent = "<b>" + point.name + "</b><br>" + point.description;
+        if (point.image_url) {
+            popupContent += "<br><img src='" + point.image_url + "' alt='" + point.name + "' style='width: 150px; height: auto;' />";
+        }
+
+        marker.bindPopup(popupContent);
+    });
+</script>
+
+<h2>Lista </h2>
+<input type="text" id="buscarInput" onkeyup="buscarTabla()" placeholder="Buscar por nombres...">
+
+<table id="tablaPuntos">
+    <thead>
+        <tr>
+            <th onclick="ordenarTabla(0)">Nombre</th>
+            <th onclick="ordenarTabla(1)">Descripción</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for point in points %}
+        <tr data-name="{{ point.name }}" data-latitude="{{ point.latitude }}" data-longitude="{{ point.longitude }}">
+            <td>{{ point.name }}</td>
+            <td>{{ point.description }}</td>
+            <td>
+                <a href="{% url 'point_edit' point.pk %}">Editar</a>  
+                <a href="{% url 'point_delete' point.pk %}">Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+{% endblock %}

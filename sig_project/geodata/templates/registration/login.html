@@ -1,0 +1,199 @@
+
+
+{% block content %}
+<script>
+function togglePassword() {
+    const passwordField = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggle-password');
+
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleIcon.classList.remove('bxs-show');
+        toggleIcon.classList.add('bxs-hide');
+    } else {
+        passwordField.type = 'password';
+        toggleIcon.classList.remove('bxs-hide');
+        toggleIcon.classList.add('bxs-show');
+    }
+}
+
+
+</script>
+
+<head>
+    <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" rel="stylesheet">
+</head>
+<div class="login-container">
+    <div class="login-image">
+        <img src="/media/imagenes/loginImg.png" alt="Login Image">
+    </div>
+    <div class="login-form">
+        <form method="post" class="login">
+            {% csrf_token %}
+            <h2>Iniciar Sesión</h2>
+            <div class="login__field">
+                <label for="username" class="input-label">Usuario</label>
+                <div class="input-wrapper">
+                    <input type="text" id="username" name="username" placeholder="Ingrese su nombre de usuario" class="input">
+                    <i class="bx bxs-user input-icon"></i>
+                </div>
+            </div>
+            <div class="login__field">
+                <label for="password" class="input-label">Contraseña</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Ingrese su contraseña" class="input">
+                    <i id="toggle-password" class="bx bxs-show input-icon" onclick="togglePassword()"></i>
+                </div>
+            </div>
+            <button type="submit" class="button login__submit">
+                <span class="button__text">Ingresar</span>
+            </button>
+            <p class="register-link">¿No tienes cuenta? <a href="{% url 'register' %}">Regístrate aquí</a></p>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* General body styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #003366, #005b99);
+    color: #fff;
+}
+
+/* Container for login form */
+.login-container {
+    display: flex;
+    width: 90%;
+    max-width: 900px;
+    background: #f4f8fb;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+/* Left side: Image */
+.login-image {
+    flex: 1;
+    background: #d9eaf4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-image img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+/* Right side: Form */
+.login-form {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #f4f8fb;
+}
+
+.login h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    color: #003366;
+    text-align: center;
+}
+
+/* Input fields */
+.input-label {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input {
+    width: 100%;
+    padding: 0.8rem;
+    padding-right: 2.5rem;
+    border: 2px solid #0074cc;
+    border-radius: 15px;
+    background: #fff;
+    color: #333;
+    font-size: 1rem;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input:focus {
+    border-color: #005b99;
+    box-shadow: 0 0 5px rgba(0, 91, 153, 0.5);
+    outline: none;
+}
+
+.input-icon {
+    position: absolute;
+    right: 10px;
+    font-size: 1.2rem;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.input-icon:hover {
+    color: #003366;
+}
+
+/* Submit button */
+button.login__submit {
+    background: #0074cc;
+    border: none;
+    color: #fff;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    text-align: center;
+    margin: 1.5rem auto 0;
+    display: block;
+}
+
+button.login__submit:hover {
+    background: #005b99;
+}
+
+/* Registration link */
+.register-link {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.register-link a {
+    color: #005b99;
+    text-decoration: none;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+</style>
+
+
+{% endblock %}

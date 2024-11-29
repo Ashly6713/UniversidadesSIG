@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div  style="background: rgba(8, 52, 97, 0.9); height: 8vh; width: 100%;">
+</div>
+<div id="map"  style="height: 92vh;"></div>
+
+<div class="sidebar-container">
+    <!-- Botón para abrir/cerrar la barra -->
+    <button id="toggle-sidebar" class="sidebar-toggle-btn">
+      <i class='bx bx-chevron-right'></i>
+    </button>
+    <!-- Barra deslizable -->
+    <div class="sidebar">
+      <div class="sidebar-content">
+        {% load custom_tags %}
+        {% if user.is_authenticated and not user|is_in_group:"PublicUsers" %}
+        <button type="button" class="btn btn btn-warning" data-toggle="modal" data-target="#exampleModal">
+            Gestionar
+        </button>
+        {% endif %} 
+        <div class="info-cards">
+            <div class="card" id="card-info" class="card d-none">
+                <img id="card-image" class="card-img-top" alt="Selecciona una Facultad" style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                    <strong><h5 id="card-title" class="card-title"></h5></strong>
+                    <p id="card-description" class="card-text"></p>
+                    <p id="card-rating"></p>
+                    <p id="calificar"></p>
+                    <p id="marcar"> 
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion accordion-flush" id="accordionFlushExample">
+            <div class="accordion-item">
+              <h2 class="accordion-header bg-info" id="flush-headingOne">
+                <button class="accordion-button collapsed " type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                    Filtros Avanzados
+                </button>
+              </h2>
+              <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                <div class="accordion-body">
+                    <!-- Filtros -->
+                    <div class="filter-section">
+                        <form method="get" class="mb-4">
+                            <div class="row">
+                                <div class="col-md-4" style="width: 100%;">
+                                    <input type="text" name="nombre" class="form-control" placeholder="Buscar por nombre" value="{{ request.GET.nombre }}">
+                                </div>
+                                    <input type="hidden" step="0.01" id="lat-input" name="lat" class="form-control" placeholder="Latitud" value="{{ request.GET.lat }}" readonly>
+                                    <input type="hidden" step="0.01" id="lon-input" name="lon" class="form-control" placeholder="Longitud" value="{{ request.GET.lon }}" readonly>
+                                <div class="col-md-9">
+                                    <input type="number" step="0.01" id="radio-input" name="radio" class="form-control" placeholder="Buscar por ubicación (km)" value="{{ request.GET.radio }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary w-100"><i class="bx bx-search"></i></button>
+                                </div>
+                                <p><strong>Punto seleccionado:</strong> <span id="selected-coordinates">Haz clic en el mapa para seleccionar un punto.</span></p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+</div>
+  
+
+
+
+
+
+
+<script>
+
+    var facultades = {{ facultades_json|safe }};
+    var map = L.map('map').setView([-17.9677, -67.11], 14);
+
+    // Cargar la capa base
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    }).addTo(map);
+
+    let selectedMarker = null;
+    let radiusCircle = null;
+    const markerGroup = L.layerGroup().addTo(map);
+    const publicasLayer = L.layerGroup();
+    const privadasLayer = L.layerGroup();
+// Mostrar puntos en el mapa
+facultades.forEach(fac => {
+    if (fac.latitud && fac.longitud) {
+        const marker = L.marker([fac.latitud, fac.longitud], { icon: fIcon, title: fac.nombre }).addTo(map);
+        marker.on('click', () => showCard(fac));
+        // Añadir el marcador al grupo
+        markerGroup.addLayer(marker);
+        if (fac.universidad === "pública") {
+        publicasLayer.addLayer(marker);
+        } else if (fac.universidad === "privada") {
+            privadasLayer.addLayer(marker);
+        }
+    }
+});
+
+// Mostrar detalles en la tarjeta
+function showCard(fac) {
+    document.getElementById('card-info').classList.remove('d-none');
+    document.getElementById('card-title').textContent = fac.nombre;
+    document.getElementById('card-description').textContent = fac.descripcion;
+    document.getElementById('card-rating').innerHTML  = `${generarEstrellas(fac.calificacion_promedio) || 'No disponible'}<br>`;
+    const button = document.querySelector('.favorite-btn');
+    if (fac.es_favorita){
+        document.getElementById('marcar').innerHTML =`
+        <button class="btn btn-primary favorite-btn" 
+                    data-id="${fac.id}" 
+                    data-tipo="facultad">
+                <i class="bx bxs-star"></i>Favorito
+        </button>`;
+        
+    }else{
+        document.getElementById('marcar').innerHTML =`
+        <button class="btn btn-outline-primary favorite-btn" 
+                    data-id="${fac.id}" 
+                    data-tipo="facultad">
+                <i class="bx bx-star"></i> Marcar como Favorito
+        </button>`;
+    }
+    document.getElementById('calificar').innerHTML = `
+            <form id="calificacion-form">
+                <div class="row">
+                    <div class="col-md-9">
+                        <div id="calificacion" class="div-cal">
+                            <input type="radio" id="star1" name="calificacion" value="5">
+                            <label for=star1" class="star"></label>
+
+                            <input type="radio" id="star2" name="calificacion" value="4">
+                            <label for="star2" class="star"></label>
+
+                            <input type="radio" id="star3" name="calificacion" value="3">
+                            <label for="star3" class="star"></label>
+
+                            <input type="radio" id="star4" name="calificacion" value="2">
+                            <label for="star4" class="star"></label>
+
+                            <input type="radio" id="star5" name="calificacion" value="1">
+                            <label for="star5" class="star"></label>
+                        </div>
+                    </div> 
+                    <div class="col-md-3">
+                        <button type="button"class="btn btn-outline-secondary"  onclick="submitCalificacion('${'Facultad'}', ${fac.id})" title="Calificar">
+                            <i class="bx bx-check"></i>
+                            </button>
+                    </div>
+                </div>
+            </form>
+        `;
+    const img = document.getElementById('card-image');
+   
+    img.src = fac.imagen_url || 'https://via.placeholder.com/400';
+}
+
+// Evento de clic en el mapa
+map.on('click', function (e) {
+    const { lat, lng } = e.latlng;
+
+    // Actualizar campos de latitud y longitud
+    document.getElementById('lat-input').value = lat.toFixed(6);
+    document.getElementById('lon-input').value = lng.toFixed(6);
+    document.getElementById('selected-coordinates').textContent = `Latitud: ${lat.toFixed(6)}, Longitud: ${lng.toFixed(6)}`;
+
+    // Añadir o mover marcador
+    if (selectedMarker) {
+        selectedMarker.setLatLng([lat, lng]);
+    } else {
+        selectedMarker = L.marker([lat, lng]).addTo(map);
+    }
+
+    // Dibujar o actualizar el círculo de radio
+    const radio = parseFloat(document.getElementById('radio-input').value) || 0;
+    if (radiusCircle) {
+        radiusCircle.setLatLng([lat, lng]);
+        radiusCircle.setRadius(radio * 1000);
+    } else {
+        radiusCircle = L.circle([lat, lng], {
+            color: 'blue',
+            fillColor: '#add8e6',
+            fillOpacity: 0.5,
+            radius: radio * 1000, // Convertir km a metros
+        }).addTo(map);
+    }
+});
+
+// actualizar el radio del círculo cuando cambie el valor del input
+document.getElementById('radio-input').addEventListener('input', function () {
+    const radio = parseFloat(this.value) || 0;
+    if (radiusCircle) {
+        radiusCircle.setRadius(radio * 1000); // Convertir km a metros
+    }
+});
+
+
+// Añadir el control de búsqueda
+const searchControl = new L.Control.Search({
+        layer: markerGroup,      
+        position: 'topleft',    
+        propertyName: 'title',     // Buscar en la propiedad 'title'
+        zoom: 18,                  
+        marker: false              // No añadir un marcador adicional
+    });
+
+    // Abrir el popup del marcador encontrado
+    searchControl.on('search:locationfound', function(e) {
+        e.layer.openPopup(); // Abre el popup del marcador encontrado
+    });
+    map.addControl(searchControl);
+
+// Crear un control de capas para alternar visibilidad
+const overlays = {
+    "Todas": markerGroup,
+    "Públicas": publicasLayer,
+    "Privadas": privadasLayer
+};
+L.control.layers(overlays,null, { position: 'topleft',collapsed: true }).addTo(map);
+</script>
+
+
+
+
+
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal"  tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" style="max-width: 90%;" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">
+            <a href="{% url 'facultad_create' %}" class="btn btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Crear nueva">
+                <i class='bx bxs-graduation nav_icon'></i><i class="bx bx-plus"></i>
+            </a>
+          </h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true" style="font-size: x-large;">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+         <!--Card-->
+         <div id='recipients' class="p-8 mt-6 lg:mt-0 rounded shadow bg-white">
+            <table id="example" class="stripe hover" style="width:100%; padding-top: 1em;  padding-bottom: 1em;" >
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Universidad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for facultad in facultades %}
+                    <tr  data-nombre="{{ facultad.nombre_facultad }}" data-latitud="{{ facultad.latitud }}" data-longitud="{{ facultad.longitud }}">
+                        <td>{{ facultad.nombre_facultad }}</td>
+                        <td>{{ facultad.descripcion }}</td>
+                        <td>{{ facultad.universidad.nombre }}</td>
+                        <td>
+                            <a href="{% url 'facultad_edit' facultad.pk %}" class="btn btn-warning" data-bs-toggle="tooltip" title="Editar">
+                                <i class="bx bx-edit"></i>
+                            </a>
+                            <form action="{% url 'facultad_delete' facultad.pk %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger"><i class="bx bx-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+         <!--/Card-->
+        </div>
+        <div class="modal-footer">
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}
