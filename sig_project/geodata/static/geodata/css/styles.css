@@ -670,7 +670,7 @@ body.dark-mode .map-section {
 
 /* Agregar estrellas como contenido antes del texto */
 .div-cal label:before {
-  content: '\2605'; /* Código Unicode de la estrella llena */
+  content: '\2605'; 
   font-family: "Boxicons", sans-serif;
 }
 
@@ -701,17 +701,17 @@ body.dark-mode .map-section {
 .stat-card .number {
   font-size: 3rem;
   font-weight: bold;
-  color: #415794; /* Color azul para el número */
+  color: #415794; 
   animation: countUp 2s ease-out forwards;
   text-shadow: 0 2px 5px rgba(255, 255, 255, 0.989);
 }
 
 .stat-card img {
-  width: 80px; /* Aumenté el tamaño de la imagen */
-  height: 80px; /* Aumenté el tamaño de la imagen */
-  object-fit: cover; /* Asegura que la imagen se ajuste bien */
-  margin: 20px 50px; /* Espaciado superior e inferior */
-  border-radius: 50%; /* Hace la imagen circular */
+  width: 80px; 
+  height: 80px; 
+  object-fit: cover;
+  margin: 20px 50px; 
+  border-radius: 50%; 
 }
 
 .stat-card .label {
@@ -728,9 +728,9 @@ body.dark-mode .map-section {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 4px; /* Grosor de la línea */
-  background-color: #0056b3; /* Azul oscuro */
-  border-radius: 0 0 10px 10px; /* Bordes redondeados en la parte inferior */
+  height: 4px; 
+  background-color: #0056b3; 
+  border-radius: 0 0 10px 10px;
 }
 
 /* Animación de conteo */
@@ -774,7 +774,7 @@ body.dark-mode .map-section {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 4px; /* Grosor de la línea */
-  background-color: #0056b3; /* Azul oscuro */
-  border-radius: 0 0 10px 10px; /* Bordes redondeados en la parte inferior */
+  height: 4px;
+  background-color: #0056b3; 
+  border-radius: 0 0 10px 10px;
 }

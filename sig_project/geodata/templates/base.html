@@ -79,22 +79,23 @@
             <img src="/media/marker/logoN.png" alt="" style="height: 30px;"> Universidades SIG 
         </div>
         <nav>
-          <ul class="menu" >
+          <ul class="menu">
             <li class="menu-item">
                 <a href="{% url 'top_items' %}" class="nav_link" title="Ranking">
                     <span class="nav_name">Ranking</span>
                 </a>
             </li>
-            <li class="menu-item" >
+            <li class="menu-item">
                 <a href="{% url 'universidad_list' %}" class="nav_link" title="Universidades">
                     <span class="nav_name">Universidades</span>
                 </a>
+            </li>
             <li class="menu-item">
                 <a href="{% url 'facultad_list' %}" class="nav_link" title="Facultades">
                     <span class="nav_name">Facultades</span>
-                </a>   
+                </a>
             </li>
-            <li class="menu-item" >
+            <li class="menu-item">
                 <a href="{% url 'carrera_list' %}" class="nav_link" title="Carreras">
                     <span class="nav_name">Carreras</span>
                 </a>
@@ -107,27 +108,24 @@
           </ul>
         </nav>
         <div class="actions">
-          {% load custom_tags %}
-                 {% if not user.is_authenticated %}
-          <div id="login-section">
-            <a href="{% url 'login' %}" class="btn btn-outline-light">Iniciar Sesión <i class='bx bx-log-in'></i> </a>
-          </div>
-          {% endif %}  
-          {% if user.is_authenticated %}
-          <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-light"><i class='bx bx-log-out nav_icon'></i></button>
+            {% load custom_tags %}
+            {% if not user.is_authenticated %}
+            <div id="login-section">
+              <a href="{% url 'login' %}" class="btn btn-outline-light">Iniciar Sesión <i class='bx bx-log-in'></i> </a>
+            </div>
+            {% endif %}
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-light"><i class='bx bx-log-out nav_icon'></i></button>
             </form>
-            {% endif %} 
+            {% endif %}
             <div id="dark-mode-toggle">
-                <i class="bx bx-moon" id="dark-mode-icon"></i>
-              </div>
-              
-        </div>
-      </header>
-
-
-
+              <i class="bx bx-moon" id="dark-mode-icon"></i>
+            </div>
+          </div>
+    </header>
+    
       
     <div>
         {% block content %}
@@ -154,9 +152,31 @@
 				.columns.adjust()
 				.responsive.recalc();
 		});
-	</script>
+// Resaltar menú actual
+        document.addEventListener('DOMContentLoaded', function () {
+    const menuLinks = document.querySelectorAll('.nav_link'); 
+    const currentPath = window.location.pathname; 
 
-   
+    menuLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+});
+
+
+	</script>
+<style>
+    .nav_link.active {
+    font-size: larger;
+    color: #4fb9f7; 
+    text-shadow: 0 2px 5px rgb(13, 15, 17);
+}
+
+
+</style>
+<script src="/static/js/menu-highlight.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'geodata/js/script.js' %}"></script>
     
