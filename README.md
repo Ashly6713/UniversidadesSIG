@@ -1,3 +1,4 @@
+Comandos de Instalación:
 .\myenv\Scripts\activate.bat 
 pip install -r requirements.txt
 cd sig_project
