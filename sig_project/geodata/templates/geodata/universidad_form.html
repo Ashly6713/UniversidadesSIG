@@ -4,35 +4,36 @@
 <div  style="background: rgba(8, 52, 97, 0.9); height: 8vh; width: 100%;">
 </div>
 
-    <div class="row form-row">
-        <div class="col-md-5">
-            <form method="POST" class="form-create" enctype="multipart/form-data">
-                {% csrf_token %}
-                <h2>{% if universidad.pk %}Editar{% else %}Crear{% endif %} Universidad</h2>
-                {% for field in form %}
-                <div class="form-group-inline">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label_tag }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                    <div class="error">{{ field.errors }}</div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-                
-                <!-- Hidden fields for latitude and longitude -->
-                <input type="hidden" id="id_latitud" name="latitud" value="{{ universidad.latitud|default:'' }}">
-                <input type="hidden" id="id_longitud" name="longitud" value="{{ universidad.longitud|default:'' }}">
-    
-                <button type="submit" class="btn btn-primary btn-submit">
-                    Guardar <i class="bx bx-plus"></i>
-                </button>
-            </form>
-        </div>
-        <div class="col-md-7">
-            <div id="map" class="map-container"></div>
-        </div>
+<div class="row form-row">
+    <div class="col-md-5">
+        <form method="POST" class="form-create" enctype="multipart/form-data">
+            {% csrf_token %}
+            <h2>{% if universidad.pk %}Editar{% else %}Crear{% endif %} Universidad</h2>
+            {% for field in form %}
+            <div class="form-group-inline">
+                <label for="{{ field.id_for_label }}">{{ field.label_tag }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="error">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <input type="hidden" id="id_latitud" name="latitud" value="{{ universidad.latitud|default:'' }}">
+            <input type="hidden" id="id_longitud" name="longitud" value="{{ universidad.longitud|default:'' }}">
+
+            <button type="submit" class="btn btn-submit">
+                <i class="bx bx-save"> Guardar </i>
+            </button>
+        </form>
     </div>
-    
+    <div class="col-md-7">
+        <div class="alert alert-primary" role="alert">
+            Arrastra el ícono a la ubicación correcta en el mapa.
+          </div>
+        <div id="map" class="map-container"></div>
+        <a href="{% url 'universidad_list' %}" style="color:  rgb(0, 115, 255);"><i class="bx bx-arrow-back"></i>Volver a la lista</a>
+    </div>
+</div>
 
 
  <script>
@@ -55,7 +56,7 @@
      });
  </script>
 
-<a href="{% url 'universidad_list' %}" style="color:  rgb(0, 208, 255);"><i class="bx bx-arrow-back"></i>Volver a la lista</a>
+
 
 
 {% endblock %}

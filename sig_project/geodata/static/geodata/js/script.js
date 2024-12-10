@@ -106,7 +106,7 @@ function submitCalificacion(tipo, tipo_id) {
         if (data.status === 'success') {
             /*document.getElementById('popup-details').style.display = 'none';*/
             location.reload();
-            alert('Gracias por su opinión. :)');
+            alert('Gracias por su opinión.');
         } else {
             alert('Error: ' + data.message);
         }
@@ -161,4 +161,58 @@ document.body.addEventListener('click', function (event) {
       })
       .catch(error => console.error('Error:', error));
   }
+});
+
+//map buton control
+
+// Función para cerrar todos los popups de una capa
+function closePopups(layerGroup) {
+  layerGroup.eachLayer(function(layer) {
+      if (layer instanceof L.Marker) {
+          layer.closePopup(); // Cierra el popup para cada marcador
+      }
+  });
+}
+
+const style = document.createElement('style');
+style.innerHTML = `
+    .leaflet-control-layers input[type="radio"] {
+        display: none; /* Oculta los radios */
+    }
+    .leaflet-control-layers label {
+        display: flex;           /* Usar flexbox */
+        align-items: center;     /* Alinear ícono y texto verticalmente */
+        gap: 8px;                /* Espaciado entre ícono y texto */
+    }
+    .leaflet-control-layers label img {
+        display: inline-block;
+    }
+
+    .popup-toggle {
+        background-color: #007bff; /* Fondo azul */
+        color: white;             /* Color del ícono */
+        border: none;             /* Sin bordes */
+        padding: 10px;            /* Espaciado interno */
+        border-radius: 5px;       /* Bordes redondeados */
+        font-size: 12px;          /* Tamaño del ícono */
+        cursor: pointer;          /* Cambiar el cursor al pasar por encima */
+    }
+    .popup-toggle:hover {
+        background-color: #0056b3; /* Fondo más oscuro al pasar el ratón */
+    }
+`;
+document.head.appendChild(style);
+
+
+// Verificar si `localStorage` tiene la bandera de abrir popups
+if (localStorage.getItem('openPopups') === 'true') {
+    openPopups(markerGroup);
+    openPopups(publicasLayer);
+    openPopups(privadasLayer);
+    localStorage.removeItem('openPopups');
+}
+
+// Asignar evento al formulario para guardar la bandera
+document.getElementById('buscar-form').addEventListener('submit', function () {
+    localStorage.setItem('openPopups', 'true');
 });

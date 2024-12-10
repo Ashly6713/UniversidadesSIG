@@ -8,11 +8,9 @@
 
 
 <div class="sidebar-container">
-    <!-- Botón para abrir/cerrar la barra -->
     <button id="toggle-sidebar" class="sidebar-toggle-btn">
       <i class='bx bx-chevron-right'></i>
     </button>
-    <!-- Barra deslizable -->
     <div class="sidebar">
       <div class="sidebar-content">
         {% load custom_tags %}
@@ -48,25 +46,25 @@
                 <div class="accordion-body">
                     <!-- Filtros -->
                     <div class="filter-section">
-                        <form method="get" class="mb-4">
+                        <form method="get" class="mb-4" id="buscar-form">
                             <div class="row">
                                 <div class="col-md-12" style="width: 100%;">
-                                    <input type="text" name="nombre" class="form-control" placeholder="Buscar por nombre" value="{{ request.GET.nombre }}">
+                                    <input type="text" name="nombre" class="form-control" placeholder="Buscar por nombre" value="{{ request.GET.nombre }}" >
                                 </div>
                                 <div class="col-md-12">
-                                    <input type="number" name="costo_max" class="form-control" id="costo_max" placeholder="Costo máximo (Bs.)">
+                                    <input type="text" name="costo_max" class="form-control" id="costo_max" placeholder="Costo máximo (Bs.)">
                                 </div>
-                                    <input type="hidden" step="0.01" id="lat-input" name="lat" class="form-control" placeholder="Latitud" value="{{ request.GET.lat }}" readonly>
-                                    <input type="hidden" step="0.01" id="lon-input" name="lon" class="form-control" placeholder="Longitud" value="{{ request.GET.lon }}" readonly>
+                                <input type="hidden" step="0.01" id="lat-input" name="lat" class="form-control" placeholder="Latitud" value="{{ request.GET.lat }}" readonly>
+                                <input type="hidden" step="0.01" id="lon-input" name="lon" class="form-control" placeholder="Longitud" value="{{ request.GET.lon }}" readonly>
                                 <div class="col-md-9">
                                     <input type="number" step="0.01" id="radio-input" name="radio" class="form-control" placeholder="Buscar por ubicación (km)" value="{{ request.GET.radio }}">
                                 </div>
                                 <div class="col-md-3">
-                                    <button type="submit" class="btn btn-primary w-100"><i class="bx bx-search"></i></button>
+                                    <button type="submit" class="btn btn-primary w-100" id="mostrar-popup"><i class="bx bx-search"></i></button>
                                 </div>
                                 <p><strong>Punto seleccionado:</strong> <span id="selected-coordinates">Haz clic en el mapa para seleccionar un punto.</span></p>
                             </div>
-                        </form>
+                        </form>                        
                     </div>
                 </div>
               </div>
@@ -83,31 +81,47 @@
  var carreras = {{ carreras_json|safe }};
     var map = L.map('map').setView([-17.9677, -67.11], 14);
 
-    // Cargar la capa base
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 20,
     }).addTo(map);
 
     let selectedMarker = null;
     let radiusCircle = null;
-    const markerGroup = L.layerGroup().addTo(map);
+    const markerGroup = L.layerGroup();
     const publicasLayer = L.layerGroup();
     const privadasLayer = L.layerGroup();
-// Mostrar puntos en el mapa
+    const iconTodas = '<img src="/media/marker/carreraR.png" style="width: 25px; height: 25px; vertical-align: middle; margin-right: 5px;">';
+    const iconPublicas = '<img src="/media/marker/carreraP.png" style="width: 25px; height: 25px; vertical-align: middle; margin-right: 5px;">';
+    const iconPrivadas = '<img src="/media/marker/carreraS.png" style="width: 25px; height: 25px; vertical-align: middle; margin-right: 5px;">';
+
 carreras.forEach(car => {
     if (car.latitud && car.longitud) {
-        const marker = L.marker([car.latitud, car.longitud], { icon: cIcon, title: car.nombre }).addTo(map);
+        const marker = L.marker([car.latitud, car.longitud], {
+            icon: car.universidad === 'pública' ? cIconP : cIcon,
+            title: car.nombre
+        });
         marker.on('click', () => showCard(car));
-        // Añadir el marcador al grupo
-        markerGroup.addLayer(marker);
+        const popupContent = `
+        <div style="font-size: 12px;">
+            <p>${car.nombre} 
+            <strong>Duración:</strong> ${car.duracion} (${car.modalidad_inscripcion})
+            <strong>Costo:</strong> ${car.costo_matricula} Bs.</p>
+        </div>
+        `;
+        const popup = L.popup({ autoClose: false, closeOnClick: false })
+            .setLatLng([car.latitud, car.longitud])
+            .setContent(popupContent);
+
+        marker.bindPopup(popup); 
         if (car.universidad === "pública") {
-        publicasLayer.addLayer(marker);
+            publicasLayer.addLayer(marker);
         } else if (car.universidad === "privada") {
             privadasLayer.addLayer(marker);
         }
+        markerGroup.addLayer(marker);
     }
 });
-
+markerGroup.addTo(map);
 // Mostrar detalles en la tarjeta
 function showCard(car) {
     document.getElementById('card-info').classList.remove('d-none');
@@ -120,7 +134,7 @@ function showCard(car) {
     }else{
         document.getElementById('duracion').textContent = 'Duración: '+car.duracion+' años';
     }
-    document.getElementById('card-rating').innerHTML  = `${generarEstrellas(car.calificacion_promedio) || 'No disponible'}<br>`;
+    document.getElementById('card-rating').innerHTML  = `${generarEstrellas(car.calificacion_promedio) || 'No disponible'} ${car.calificacion_promedio}<br>`;
     const button = document.querySelector('.favorite-btn');
     if (car.es_favorita){
         document.getElementById('marcar').innerHTML =`
@@ -141,29 +155,27 @@ function showCard(car) {
     document.getElementById('calificar').innerHTML = `
             <form id="calificacion-form">
                 <div class="row">
-                    <div class="col-md-9">
+                    <div class="col-md-5">
+                        Danos tu opinión
+                    </div>
+                    <div class="col-md-7">
                         <div id="calificacion" class="div-cal">
-                            <input type="radio" id="star1" name="calificacion" value="5">
-                            <label for=star1" class="star"></label>
+                            <input type="radio" id="star1" name="calificacion" value="5" onclick="submitCalificacion('${'Carrera'}', ${car.id})">
+                            <label for="star1" class="star"></label>
 
-                            <input type="radio" id="star2" name="calificacion" value="4">
+                            <input type="radio" id="star2" name="calificacion" value="4" onclick="submitCalificacion('${'Carrera'}', ${car.id})">
                             <label for="star2" class="star"></label>
 
-                            <input type="radio" id="star3" name="calificacion" value="3">
+                            <input type="radio" id="star3" name="calificacion" value="3" onclick="submitCalificacion('${'Carrera'}', ${car.id})">
                             <label for="star3" class="star"></label>
 
-                            <input type="radio" id="star4" name="calificacion" value="2">
+                            <input type="radio" id="star4" name="calificacion" value="2" onclick="submitCalificacion('${'Carrera'}', ${car.id})">
                             <label for="star4" class="star"></label>
 
-                            <input type="radio" id="star5" name="calificacion" value="1">
+                            <input type="radio" id="star5" name="calificacion" value="1" onclick="submitCalificacion('${'Carrera'}', ${car.id})">
                             <label for="star5" class="star"></label>
                         </div>
                     </div> 
-                    <div class="col-md-3">
-                        <button type="button"class="btn btn-outline-secondary"  onclick="submitCalificacion('${'Carrera'}', ${car.id})" title="Calificar">
-                            <i class="bx bx-check"></i>
-                            </button>
-                    </div>
                 </div>
             </form>
         `;
@@ -172,23 +184,18 @@ function showCard(car) {
     img.src = car.imagen_url || 'https://via.placeholder.com/400';
 }
 
-// Evento de clic en el mapa
 map.on('click', function (e) {
     const { lat, lng } = e.latlng;
 
-    // Actualizar campos de latitud y longitud
     document.getElementById('lat-input').value = lat.toFixed(6);
     document.getElementById('lon-input').value = lng.toFixed(6);
     document.getElementById('selected-coordinates').textContent = `Latitud: ${lat.toFixed(6)}, Longitud: ${lng.toFixed(6)}`;
 
-    // Añadir o mover marcador
     if (selectedMarker) {
         selectedMarker.setLatLng([lat, lng]);
     } else {
         selectedMarker = L.marker([lat, lng]).addTo(map);
     }
-
-    // Dibujar o actualizar el círculo de radio
     const radio = parseFloat(document.getElementById('radio-input').value) || 0;
     if (radiusCircle) {
         radiusCircle.setLatLng([lat, lng]);
@@ -198,7 +205,7 @@ map.on('click', function (e) {
             color: 'blue',
             fillColor: '#add8e6',
             fillOpacity: 0.5,
-            radius: radio * 1000, // Convertir km a metros
+            radius: radio * 1000, 
         }).addTo(map);
     }
 });
@@ -207,35 +214,57 @@ map.on('click', function (e) {
 document.getElementById('radio-input').addEventListener('input', function () {
     const radio = parseFloat(this.value) || 0;
     if (radiusCircle) {
-        radiusCircle.setRadius(radio * 1000); // Convertir km a metros
+        radiusCircle.setRadius(radio * 1000); 
     }
 });
 
-
-// Añadir el control de búsqueda
+markerGroup.addTo(map);
 const searchControl = new L.Control.Search({
         layer: markerGroup,      
         position: 'topleft',    
-        propertyName: 'title',     // Buscar en la propiedad 'title'
+        propertyName: 'title',     
         zoom: 18,                  
-        marker: false              // No añadir un marcador adicional
+        marker: false              
     });
-
-    // Abrir el popup del marcador encontrado
     searchControl.on('search:locationfound', function(e) {
-        e.layer.openPopup(); // Abre el popup del marcador encontrado
+        e.layer.openPopup(); 
     });
     map.addControl(searchControl);
 
-// Crear un control de capas para alternar visibilidad
 const overlays = {
-    "Todas": markerGroup,
-    "Públicas": publicasLayer,
-    "Privadas": privadasLayer
+    [`${iconTodas} Todas`]: markerGroup,
+    [`${iconPublicas} Públicas`]: publicasLayer,
+    [`${iconPrivadas} Privadas`]: privadasLayer
 };
-L.control.layers(overlays,null, { position: 'topleft',collapsed: true }).addTo(map);
-</script>
 
+L.control.layers(overlays, null, { position: 'topleft', collapsed: false }).addTo(map);
+
+const popupToggleControl = L.Control.extend({
+    options: { position: 'topleft' }, 
+
+    onAdd: function(map) {
+        const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control popup-toggle');
+        button.innerHTML = '<i class="bx bx-show"></i> Mostrar Info'; // Ícono inicial de "mostrar"
+        L.DomEvent.on(button, 'click', () => {
+            if (button.innerHTML.includes('bx-hide')) {
+                button.innerHTML = '<i class="bx bx-show"></i> Mostrar Info'; // Cambiar ícono a "ocultar"
+                closePopups(markerGroup);
+                closePopups(publicasLayer);
+                closePopups(privadasLayer);
+            } else {
+                button.innerHTML = '<i class="bx bx-hide"></i> Ocultar Info'; // Cambiar ícono a "mostrar"
+                openPopups(markerGroup);
+                openPopups(publicasLayer);
+                openPopups(privadasLayer);
+            }
+        });
+
+        return button;
+    }
+});
+
+map.addControl(new popupToggleControl());
+</script>
 
  <!-- Modal -->
  <div class="modal fade" id="exampleModal"  tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -243,8 +272,8 @@ L.control.layers(overlays,null, { position: 'topleft',collapsed: true }).addTo(m
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">
-            <a href="{% url 'carrera_create' %}" class="btn btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Crear nueva">
-                <i class='bx bxs-book nav_icon'></i> <i class="bx bx-plus"></i>
+            <a href="{% url 'carrera_create' %}" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Crear nueva">
+                Crear Nueva <i class="bx bx-plus"></i>
             </a>
           </h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">

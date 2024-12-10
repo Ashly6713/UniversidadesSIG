@@ -1,17 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class Point(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    image = models.ImageField(upload_to='images/', null=True, blank=True)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    calificacion_promedio = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
-
-    def __str__(self):
-        return self.name
 
 class Universidad(models.Model):
     nombre = models.CharField(max_length=255)

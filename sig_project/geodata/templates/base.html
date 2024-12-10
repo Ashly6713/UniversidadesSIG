@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Educacion SIG</title>
+    <title>UniversidadeSIG</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" rel="stylesheet">
@@ -28,7 +28,7 @@
 <!-- Leaflet Draw JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 
-<link rel="icon" href="/media/marker/logoN.png" type="image/x-icon">
+<link rel="icon" href="/media/marker/universityR.png" type="image/x-icon">
 
 
 {% load static %}
@@ -74,50 +74,14 @@
 
 </head>
 <body id="body-pd">
-    <!-- <header class="header" id="header">
-        <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div> 
-        
-        <a href="{% url 'login' %}" class="btn btn-primary">Iniciar Sesión <i class='bx bx-log-in'></i> </a>
-    </header>
-            <div class="l-navbar" id="nav-bar">
-        <nav class="nav">
-            <div> <a href="{% url 'home' %}" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> <span class="nav_logo-name">SIG</span> </a>
-                <div class="nav_list"> 
-                    {% load custom_tags %}
-
-                    {% if user.is_authenticated and not user|is_in_group:"PublicUsers" %}
-                        <a href="{% url 'universidad_list' %}" class="nav_link" title="Universidades">
-                            <i class='bx bx-buildings nav_icon'></i>
-                            <span class="nav_name">Universidades</span>
-                        </a>
-                    
-                    <a href="{% url 'facultad_list' %}" class="nav_link" title="Facultades">
-                        <i class='bx bxs-graduation nav_icon'></i>
-                        <span class="nav_name">Facultades</span>
-                    </a>                    
-                    <a href="{% url 'carrera_list' %}" class="nav_link" title="Carreras">
-                        <i class='bx bx-book nav_icon'></i>
-                        <span class="nav_name">Carreras</span>
-                    </a>
-                    {% endif %}              
-                    
-                </div>
-            </div> <a href="{% url 'logout' %}" class="nav_link"> 
-                <form method="post" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-primary"><i class='bx bx-log-out nav_icon'></i></button>
-                </form> </a>
-        </nav>
-    </div> -->
-
     <header class="navbar" id="navbar">
         <div class="logo" id="logo" style="display: flex; align-items: center;">
-            <img src="/media/marker/logoN.png" alt="" style="height: 30px;"> Educacion SIG 
+            <img src="/media/marker/logoN.png" alt="" style="height: 30px;"> Universidades SIG 
         </div>
         <nav>
           <ul class="menu" >
             <li class="menu-item">
-                <a href="{% url 'top_items' %}" class="nav_link" title="Carreras">
+                <a href="{% url 'top_items' %}" class="nav_link" title="Ranking">
                     <span class="nav_name">Ranking</span>
                 </a>
             </li>
@@ -136,7 +100,7 @@
                 </a>
             </li>
             <li class="menu-item">
-                <a href="{% url 'favoritos_list' %}" class="nav_link" title="Carreras">
+                <a href="{% url 'favoritos_list' %}" class="nav_link" title="Favoritos">
                     <span class="nav_name">Favoritos</span>
                 </a>
             </li>
@@ -173,11 +137,10 @@
     <!-- jQuery -->
 	<script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 
- <!-- jQuery -->
- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
- <!-- Bootstrap Bundle JS -->
- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
 
 	<!--Datatables -->
 	<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
@@ -191,9 +154,6 @@
 				.columns.adjust()
 				.responsive.recalc();
 		});
-     
-
-        
 	</script>
 
    

@@ -1,7 +1,7 @@
 import json
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Point, Universidad, Facultad, Carrera, Calificacion, Favorita
-from .forms import PointForm, UniversidadForm, FacultadForm, CarreraForm, CalificacionForm
+from .models import Universidad, Facultad, Carrera, Calificacion, Favorita
+from .forms import UniversidadForm, FacultadForm, CarreraForm, CalificacionForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.http import JsonResponse
@@ -16,17 +16,9 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-
-            # Obtener o crear el grupo "PublicUsers"
             group, created = Group.objects.get_or_create(name='PublicUsers')
-            
-            # Añadir el usuario al grupo
             user.groups.add(group)
-
-            # Iniciar sesión automáticamente después de registrarse
             login(request, user)
-
-            # Redirigir después del registro exitoso
             return redirect('home')
     else:
         form = UserCreationForm()
@@ -35,104 +27,29 @@ def register(request):
 
 
 @login_required
-def point_list(request):
-    points = Point.objects.filter(user=request.user)
-    
-    # Serializar los puntos a JSON, incluyendo la URL de la imagen
-    points_data = []
-    for point in points:
-        point_data = {
-            "name": point.name,
-            "latitude": float(point.latitude),
-            "longitude": float(point.longitude),
-            "description": point.description,
-            "image_url": point.image.url if point.image else None  # Asegurar que se pase la URL de la imagen
-        }
-        points_data.append(point_data)
-    
-    return render(request, 'geodata/point_list.html', {
-        'points_json': json.dumps(points_data),
-        'points': points
-    })
-
-@login_required
-def point_create_edit(request, pk=None):
-    # Si se proporciona un pk, es una edición
-    if pk:
-        point = get_object_or_404(Point, pk=pk)
-    else:
-        point = Point(user=request.user)  # Si no hay pk, es un nuevo punto
-
-    if request.method == 'POST':
-        form = PointForm(request.POST, request.FILES, instance=point)  # Asegúrate de incluir request.FILES
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
-
-        # Solo actualizar las coordenadas si se han proporcionado nuevas
-        if latitude and longitude:
-            point.latitude = latitude
-            point.longitude = longitude
-
-        if form.is_valid():
-            form.save()
-
-            # Redirigir a la lista de puntos después de guardar
-            return redirect('point_list')  
-    else:
-        form = PointForm(instance=point)
-
-    return render(request, 'geodata/point_form.html', {'form': form, 'point': point})
-
-@login_required
-def point_edit(request, pk):
-    point = get_object_or_404(Point, pk=pk, user=request.user)
-    if request.method == 'POST':
-        form = PointForm(request.POST, request.FILES, instance=point)
-        if form.is_valid():
-            form.save()
-            return redirect('point_list')
-    else:
-        form = PointForm(instance=point)
-    return render(request, 'geodata/point_form.html', {'form': form})
-
-@login_required
-def point_delete(request, pk):
-    point = get_object_or_404(Point, pk=pk, user=request.user)
-    if request.method == 'POST':
-        point.delete()
-        return redirect('point_list')
-    return render(request, 'geodata/point_confirm_delete.html', {'point': point})
-
-@login_required
 def universidad_list(request):
-    # Obtener parámetros de búsqueda desde la solicitud GET
     filtro_nombre = request.GET.get('nombre', '').strip()
     lat = request.GET.get('lat')
     lon = request.GET.get('lon')
-    radio_km = request.GET.get('radio')  # Radio en kilómetros
+    radio_km = request.GET.get('radio') 
 
     favoritas = Favorita.objects.filter(usuario=request.user)
-
-    # Filtrar universidades que pertenecen al usuario actual
     universidades = Universidad.objects.all()
 
-    # Aplicar filtro por nombre si se proporciona
     if filtro_nombre:
         universidades = universidades.filter(
             Q(nombre__icontains=filtro_nombre) | Q(descripcion__icontains=filtro_nombre)
         )
 
-    # Aplicar filtro por ubicación si se proporciona
     if lat and lon and radio_km:
         lat = float(lat)
         lon = float(lon)
         radio_km = float(radio_km)
 
-        # Filtrar por ubicación dentro del radio dado usando Haversine
         from math import radians, cos, sin, sqrt, atan2
 
         def haversine(lat1, lon1, lat2, lon2):
-            R = 6371  # Radio de la Tierra en kilómetros
+            R = 6371  
             dlat = radians(lat2 - lat1)
             dlon = radians(lon2 - lon1)
             a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
@@ -144,7 +61,6 @@ def universidad_list(request):
             if haversine(lat, lon, float(uni.latitud), float(uni.longitud)) <= radio_km
         ]
 
-    # Construir datos serializados para el frontend
     universidades_data = []
     for universidad in universidades:
         es_favorita = favoritas.filter(universidad=universidad).exists()
@@ -211,14 +127,14 @@ def universidad_create_edit(request, pk=None):
         latitud = request.POST.get('latitud')
         longitud = request.POST.get('longitud')
 
-        # Solo actualizar las coordenadas si se han proporcionado nuevas
+        # Solo coordenadas si se han proporcionado nuevas
         if latitud and longitud:
             universidad.latitud = latitud
             universidad.longitud = longitud
 
         if form.is_valid():
             form.save()
-            return redirect('universidad_list')  # Redirige a la lista después de guardar
+            return redirect('universidad_list')  
     else:
         form = UniversidadForm(instance=universidad)
 
@@ -272,6 +188,7 @@ def facultad_list(request):
             "imagen_url": facultad.imagen.url if facultad.imagen else None,
             "es_favorita": es_favorita,
             "universidad": facultad.universidad.tipo,
+            "universidad_nom": facultad.universidad.nombre,
             "calificacion_promedio": float(facultad.calificacion_promedio) if facultad.calificacion_promedio is not None else None,
         }
         facultades_data.append(facultad_data)
@@ -329,20 +246,19 @@ def carrera_list(request):
         carreras = carreras.filter(
             Q(nombre_carrera__icontains=filtro_nombre) | Q(descripcion__icontains=filtro_nombre)
         )
+
     if costo_max:
             carreras = carreras.filter(costo_matricula__lte=costo_max)
 
-    # Aplicar filtro por ubicación si se proporciona
     if lat and lon and radio_km:
         lat = float(lat)
         lon = float(lon)
         radio_km = float(radio_km)
 
-        # Filtrar por ubicación dentro del radio dado usando Haversine
         from math import radians, cos, sin, sqrt, atan2
 
         def haversine(lat1, lon1, lat2, lon2):
-            R = 6371  # Radio de la Tierra en kilómetros
+            R = 6371  
             dlat = radians(lat2 - lat1)
             dlon = radians(lon2 - lon1)
             a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
@@ -351,10 +267,9 @@ def carrera_list(request):
 
         carreras = [
             car for car in carreras
-            if haversine(lat, lon, float(car.latitud), float(car.longitud)) <= radio_km
+            if haversine(float(lat), float(lon), float(car.latitud), float(car.longitud)) <= float(radio_km)
         ]
 
-    # Construir datos serializados para el frontend
     carreras_data = []
     for carrera in carreras:
         es_favorita = favoritas.filter(carrera=carrera).exists()
@@ -382,11 +297,11 @@ def carrera_list(request):
 
 @login_required
 def carrera_create_edit(request, pk=None):
-    # Si se proporciona un pk, es una edición
+
     if pk:
         carrera = get_object_or_404(Carrera, pk=pk)
     else:
-        carrera = Carrera(user=request.user)  # Nuevo objeto para crear
+        carrera = Carrera(user=request.user)  
 
     if request.method == 'POST':
         form = CarreraForm(request.POST, request.FILES, instance=carrera)
@@ -399,7 +314,7 @@ def carrera_create_edit(request, pk=None):
 
         if form.is_valid():
             form.save()
-            return redirect('carrera_list')  # Redirige a la lista después de guardar
+            return redirect('carrera_list')  
     else:
         form = CarreraForm(instance=carrera)
 
@@ -415,7 +330,7 @@ def carrera_delete(request, pk):
 
 
 def calcular_distancia(lat1, lng1, lat2, lng2):
-    R = 6371  # Radio de la Tierra en km
+    R = 6371  
     dlat = radians(lat2 - lat1)
     dlng = radians(lng2 - lng1)
     a = sin(dlat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlng / 2)**2
@@ -424,61 +339,15 @@ def calcular_distancia(lat1, lng1, lat2, lng2):
 
 
 def public_map_view(request):
-    # Recibir filtros desde el formulario o parámetros GET
-    tipo = request.GET.get('tipo')
-    nombre = request.GET.get('nombre', '')
-    modalidad = request.GET.get('modalidad')
-    costo_min = request.GET.get('costo_min')
-    costo_max = request.GET.get('costo_max')
-    tipo_universidad = request.GET.get('tipo_universidad')
-    rango_km = request.GET.get('rango_km')
-    lat = request.GET.get('lat')
-    lng = request.GET.get('lng')
 
-    # Obtener todas las entidades inicialmente
     universidades = Universidad.objects.all()
     facultades = Facultad.objects.all()
     carreras = Carrera.objects.all()
 
-    # Filtrar por tipo de universidad si está especificado
-    if tipo_universidad:
-        universidades = universidades.filter(tipo=tipo_universidad)
-        facultades = facultades.filter(universidad__tipo=tipo_universidad)
-        carreras = carreras.filter(facultad__universidad__tipo=tipo_universidad)
+    universidades = [u for u in universidades ]
+    facultades = [f for f in facultades ]
+    carreras = [c for c in carreras ]
 
-    # Filtrar por tipo específico (universidad, facultad, carrera)
-    if tipo == 'universidad':
-        universidades = universidades.filter(
-            Q(nombre__icontains=nombre) | Q(descripcion__icontains=nombre)
-        )
-        facultades, carreras = [], []
-    elif tipo == 'facultad':
-        facultades = facultades.filter(
-            Q(nombre_facultad__icontains=nombre) | Q(descripcion__icontains=nombre)
-        )
-        carreras = carreras.none()
-    elif tipo == 'carrera':
-        carreras = carreras.filter(
-            Q(nombre_carrera__icontains=nombre) | Q(descripcion__icontains=nombre)
-        )
-        if modalidad:
-            carreras = carreras.filter(modalidad_inscripcion=modalidad)
-        if costo_min:
-            carreras = carreras.filter(costo_matricula__gte=costo_min)
-        if costo_max:
-            carreras = carreras.filter(costo_matricula__lte=costo_max)
-        facultades = facultades.none()
-
-# Aplicar filtro por rango geográfico si se proporcionan los datos
-    if rango_km and lat and lng:
-        lat, lng, rango_km = float(lat), float(lng), float(rango_km)
-
-        # Filtrar universidades, facultades y carreras
-        universidades = [u for u in universidades if calcular_distancia(lat, lng, u.latitud, u.longitud) <= rango_km]
-        facultades = [f for f in facultades if calcular_distancia(lat, lng, f.latitud, f.longitud) <= rango_km]
-        carreras = [c for c in carreras if calcular_distancia(lat, lng, c.latitud, c.longitud) <= rango_km]
-
-    # Serializar los datos
     universidades_data = [
         {
             "id": u.pk,
@@ -525,10 +394,7 @@ def public_map_view(request):
     return render(request, 'geodata/public_map.html', {
         'universidades_json': json.dumps(universidades_data),
         'facultades_json': json.dumps(facultades_data),
-        'carreras_json': json.dumps(carreras_data),
-        'rango_km': rango_km,  # Enviar rango al frontend
-        'lat': lat,            # Coordenadas seleccionadas
-        'lng': lng,
+        'carreras_json': json.dumps(carreras_data)
     })
 
 
@@ -540,7 +406,7 @@ def calificar(request):
         calificacion_value = int(request.POST.get('calificacion'))
         comentario = request.POST.get('comentario')
 
-        # Verificar si el tipo es universidad, facultad o carrera
+        # Verificar si el tipo
         if tipo == 'Universidad':
             tipo_obj = Universidad.objects.get(id=tipo_id)
         elif tipo == 'Facultad':
@@ -559,19 +425,19 @@ def calificar(request):
         ).first()
 
         if calificacion_existente:
-            # Si ya existe, actualizamos la calificación y el comentario
+            
             calificacion_existente.calificacion = calificacion_value
             calificacion_existente.comentario = comentario
             calificacion_existente.save()
         else:
-            # Si no existe, creamos una nueva
+            
             calificacion = Calificacion(
                 usuario=request.user,
                 calificacion=calificacion_value,
                 comentario=comentario
             )
             
-            # Asignar la relación correspondiente
+            
             if isinstance(tipo_obj, Universidad):
                 calificacion.universidad = tipo_obj
             elif isinstance(tipo_obj, Facultad):
@@ -581,7 +447,7 @@ def calificar(request):
 
             calificacion.save()
 
-        # Actualizar el promedio de calificación en el objeto correspondiente
+        # Actualizar el promedio
         if tipo == 'Universidad':
             promedio = Calificacion.objects.filter(universidad=tipo_obj).aggregate(promedio=Avg('calificacion'))['promedio']
             tipo_obj.calificacion_promedio = float(promedio) if promedio is not None else None
@@ -619,7 +485,7 @@ def top_items_view(request):
             "nombre": u.nombre,
             "descripcion": u.descripcion,
             "imagen_url": u.imagen.url if u.imagen else None,
-            "calificacion_promedio": float(u.calificacion_promedio) if u.calificacion_promedio is not None else None,
+            "calProm": float(u.calificacion_promedio) if u.calificacion_promedio is not None else None,
         }
         for u in top_universidades
     ]
@@ -629,7 +495,7 @@ def top_items_view(request):
             "nombre": f.nombre_facultad,
             "descripcion": f.descripcion,
             "imagen_url": f.imagen.url if f.imagen else None,
-            "calificacion_promedio": float(f.calificacion_promedio) if f.calificacion_promedio is not None else None,
+            "calProm": float(f.calificacion_promedio) if f.calificacion_promedio is not None else None,
         }
         for f in top_facultades
     ]
@@ -639,8 +505,10 @@ def top_items_view(request):
             "nombre": c.nombre_carrera,
             "descripcion": c.descripcion,
             "imagen_url": c.imagen.url if c.imagen else None,
-            "calificacion_promedio": float(c.calificacion_promedio) if c.calificacion_promedio is not None else None,
+            "calProm": float(c.calificacion_promedio) if c.calificacion_promedio is not None else None,
             "costo_matricula": str(c.costo_matricula),
+            "duracion": c.duracion,
+            "modalidad_inscripcion": c.modalidad_inscripcion
         }
         for c in top_carreras
     ]
@@ -685,22 +553,20 @@ def toggle_favorito(request):
 
 @login_required
 def favoritos_list(request):
-    # Obtener favoritos del usuario actual
+    
     favoritos = Favorita.objects.filter(usuario=request.user)
 
-    # Dividir favoritos en listas separadas
     universidades_favoritas = [f.universidad for f in favoritos if f.universidad]
     facultades_favoritas = [f.facultad for f in favoritos if f.facultad]
     carreras_favoritas = [f.carrera for f in favoritos if f.carrera]
 
-    # Serializar datos para frontend
     universidades_data = [
         {
             "id": uni.pk,
             "nombre": uni.nombre,
             "descripcion": uni.descripcion,
             "imagen_url": uni.imagen.url if uni.imagen else None,
-            "calificacion_promedio": float(uni.calificacion_promedio) if uni.calificacion_promedio is not None else None,
+            "calProm": float(uni.calificacion_promedio) if uni.calificacion_promedio is not None else None,
         }
         for uni in universidades_favoritas
     ]
@@ -710,7 +576,7 @@ def favoritos_list(request):
             "nombre": fac.nombre_facultad,
             "descripcion": fac.descripcion,
             "imagen_url": fac.imagen.url if fac.imagen else None,
-            "calificacion_promedio": float(fac.calificacion_promedio) if fac.calificacion_promedio is not None else None,
+            "calProm": float(fac.calificacion_promedio) if fac.calificacion_promedio is not None else None,
         }
         for fac in facultades_favoritas
     ]
@@ -720,7 +586,7 @@ def favoritos_list(request):
             "nombre": car.nombre_carrera,
             "descripcion": car.descripcion,
             "imagen_url": car.imagen.url if car.imagen else None,
-            "calificacion_promedio": float(car.calificacion_promedio) if car.calificacion_promedio is not None else None,
+            "calProm": float(car.calificacion_promedio) if car.calificacion_promedio is not None else None,
             "modalidad_inscripcion": car.modalidad_inscripcion,
             "costo_matricula": float(car.costo_matricula) if car.costo_matricula else None,
             "duracion": car.duracion,

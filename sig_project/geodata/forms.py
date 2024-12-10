@@ -1,11 +1,5 @@
 from django import forms
-from .models import Point, Universidad, Facultad, Carrera, Calificacion
-
-class PointForm(forms.ModelForm):
-    class Meta:
-        model = Point
-        fields = ['name', 'description', 'image']
-        
+from .models import Universidad, Facultad, Carrera, Calificacion
 
 class UniversidadForm(forms.ModelForm):
     class Meta:

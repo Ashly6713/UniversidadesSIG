@@ -1,9 +1,6 @@
 from django.urls import path
 from .views import (
-    point_list,
     public_map_view,
-    point_create_edit,
-    point_delete,
     calificar,
     universidad_list,
     universidad_create_edit,
@@ -21,14 +18,10 @@ from .views import (
 )
 
 urlpatterns = [
-    path('point', point_list, name='point_list'),
      path('', public_map_view, name='home'),
 
      path('register/', register, name='register'),
      path('calificar/', calificar, name='calificar'),
-     path('point/create/', point_create_edit, name='point_create'),
-    path('point/edit/<int:pk>/', point_create_edit, name='point_edit'),
-    path('point/delete/<int:pk>/', point_delete, name='point_delete'),
 
     path('universidades/', universidad_list, name='universidad_list'),
     path('universidades/nueva/', universidad_create_edit, name='universidad_create'),

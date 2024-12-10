@@ -12,8 +12,16 @@ body, ul {
   }
   
   body.dark-mode {
-    background: linear-gradient(to bottom, #000, #002244);
+    background: linear-gradient(15deg, #74ace4, #005b99);
     color: white;
+  }
+  .nav_link{
+    font-size: large;
+  }
+  .nav_link:hover{
+    font-size: larger;
+    color: #e2e8f0;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
   }
   
   /* Navbar Styles */
@@ -369,13 +377,13 @@ body.dark-mode .map-section {
 .form-row {
   width: 100%;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem;
   display: flex;
-  flex-wrap: nowrap;
-  gap: 2rem;
+  flex-wrap: wrap;
   background: rgba(240, 248, 255, 0.9);
   border-radius: 20px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  align-items: center;
 }
 
 /* Formulario de creación */
@@ -391,41 +399,49 @@ body.dark-mode .map-section {
   color: #003366;
   margin-bottom: 1rem;
   font-size: 1.5rem;
+  font-weight: bold;
 }
 
-/* Inline form group */
 .form-group-inline {
-  display:flex;
-  grid-template-columns: 1fr 3fr; /* Label 1/4 del ancho, input 3/4 */
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    vertical-align:middle; 
+}
+/* Inputs alineados con labels */
+.form-create input, 
+.form-create select, 
+.form-create textarea {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border: 2px solid #0074cc;
+    border-radius: 15px;
+    line-height: 1.25;
+    max-height: 150px;
+    margin-bottom: 6px;
+    width: calc(100% - 120px);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s, box-shadow 0.3s;
+    vertical-align:middle; 
+    
 }
 
-.form-label {
-  flex: 1;
-  font-size: 1rem;
-  color: #003366;
-}
-
-
-input, select, textarea {
-  flex: 3;
-  padding: 0.7rem;
-  border: 2px solid #0074cc;
-  border-radius: 15px;
-  background: #fff;
-  color: #333;
-  font-size: 1rem;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-
-input:focus, select:focus, textarea:focus {
+.form-create input:focus, 
+.form-create select:focus, 
+.form-create textarea:focus {
   border-color: #005b99;
-  box-shadow: 0 0 5px rgba(0, 92, 153, 0.59);
+  box-shadow: 0 0 5px rgba(0, 91, 153, 0.5);
   outline: none;
+}
+
+/* Labels alineados con los inputs */
+.form-create label {
+    width: 100px;
+    margin-right: 10px;
+    color: #003366;
+    font-size: 1rem; 
 }
 
 /* Submit button */
@@ -445,15 +461,16 @@ input:focus, select:focus, textarea:focus {
 
 .btn-submit:hover {
   background: #005b99;
+  color: #fff;
 }
 
-/* Map container */
+/* Contenedor del mapa */
 .map-container {
-  width: 100%;
-  height: 550px;
-  border-radius: 15px;
-  border: 2px solid #0074cc;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    height: 550px;
+    border-radius: 15px;
+    border: 2px solid #0074cc;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 
@@ -466,7 +483,7 @@ input:focus, select:focus, textarea:focus {
     /*POPUP*/
     #popup-details {
         position: absolute;
-        top: 750px;
+        top: 930px;
         left: 18%;
         transform: translateX(-50%);
         width: 400px;
@@ -505,7 +522,6 @@ input:focus, select:focus, textarea:focus {
 .sidebar-container {
   position: relative;
   z-index: 1000;
-
 }
 
 /* Botón para abrir/cerrar la barra */
@@ -530,9 +546,9 @@ input:focus, select:focus, textarea:focus {
 /* Barra lateral */
 .sidebar {
   position: fixed;
-  top: 58px;
+  top: 55px;
   right: 0;
-  height: 100%;
+  height: 95%;
   width: 400px;
   background: rgba(8, 52, 97, 0.9);/* Fondo semitransparente */
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
@@ -546,7 +562,7 @@ input:focus, select:focus, textarea:focus {
 /* Texto dentro de la barra */
 .sidebar h3 {
   margin-bottom: 15px;
-  font-size: 1.5em;
+  font-size: 0.2em;
 }
 
 .sidebar h4 {
@@ -633,7 +649,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .div-cal label {
-  color: rgb(156, 186, 222); /* Estrellas no seleccionadas por defecto */
+  color: rgb(178, 192, 210); /* Estrellas no seleccionadas por defecto */
   font-size: 30px;
   cursor: pointer;
 }
@@ -645,11 +661,11 @@ input:focus, select:focus, textarea:focus {
 
 .div-cal label:hover,
 .div-cal label:hover ~ label {
-  color: orange; /* Cambiar el color cuando el mouse pase sobre las estrellas */
+  color: gold; /* Cambiar el color cuando el mouse pase sobre las estrellas */
 }
 
 .div-cal input[type="radio"]:checked ~ label {
-  color: orange; /* Marcar las estrellas de color naranja cuando se seleccionen */
+  color: gold; /* Marcar las estrellas de color naranja cuando se seleccionen */
 }
 
 /* Agregar estrellas como contenido antes del texto */
@@ -661,3 +677,104 @@ input:focus, select:focus, textarea:focus {
 
 
 
+
+/*CANTIDAD DE CARSD*/
+/* Estilo para las cards */
+.stat-card {
+  width: 96%;
+  margin: 10px;
+  padding: 20px;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  text-align: center;
+  background-color: rgba(0, 123, 255, 0.1); 
+  transition: transform 0.3s ease-in-out;
+  position: relative;
+}
+
+.stat-card:hover {
+  transform: scale(1.05);
+}
+
+.stat-card .number {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #415794; /* Color azul para el número */
+  animation: countUp 2s ease-out forwards;
+  text-shadow: 0 2px 5px rgba(255, 255, 255, 0.989);
+}
+
+.stat-card img {
+  width: 80px; /* Aumenté el tamaño de la imagen */
+  height: 80px; /* Aumenté el tamaño de la imagen */
+  object-fit: cover; /* Asegura que la imagen se ajuste bien */
+  margin: 20px 50px; /* Espaciado superior e inferior */
+  border-radius: 50%; /* Hace la imagen circular */
+}
+
+.stat-card .label {
+  margin-top: 35px;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+
+/* Línea inferior azul oscuro elegante */
+.stat-card::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px; /* Grosor de la línea */
+  background-color: #0056b3; /* Azul oscuro */
+  border-radius: 0 0 10px 10px; /* Bordes redondeados en la parte inferior */
+}
+
+/* Animación de conteo */
+@keyframes countUp {
+  from {
+      counter-reset: number 0;
+  }
+  to {
+      counter-reset: number 1;
+  }
+}
+
+.stat-card .number {
+  counter-increment: number;
+}
+
+
+
+
+/* CARDS TOP Y FAVORITOS */
+.card-tf {
+  width: 96%;
+  margin: 10px;
+  padding: 20px;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  text-align: center;
+  background-color: rgb(202, 222, 243); 
+  transition: transform 0.3s ease-in-out;
+  position: relative;
+}
+
+.card-tf:hover {
+  transform: scale(1.05);
+}
+.card-tf::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px; /* Grosor de la línea */
+  background-color: #0056b3; /* Azul oscuro */
+  border-radius: 0 0 10px 10px; /* Bordes redondeados en la parte inferior */
+}

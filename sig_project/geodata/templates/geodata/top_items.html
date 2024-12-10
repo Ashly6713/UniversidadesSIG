@@ -4,73 +4,71 @@
 <div  style="background: rgba(8, 52, 97, 0.9); height: 8vh; width: 100%;">
 </div>
 <div class="container my-5">
-    
     <!-- Universidades -->
     <h2 class="my-4">Universidades Mejor Calificadas 
         <i class='bx bx-trophy nav_icon'></i></h2>
     <div class="row">
         {% for u in universidades %}
         <div class="col-md-4">
-            <div class="card mb-4">
+            <div class="card mb-4 card-tf">
                 <img src="{{ u.imagen_url }}" class="card-img-top" alt="Universidad" style="height: 200px; object-fit: cover;">
                 <div class="card-body">
-                    <h5 class="card-title">{{ u.nombre }}</h5>
+                    <h2 >{{ u.nombre }}</h2>
                     <p class="card-text">{{ u.descripcion }}</p>
-                    <p id="rating-{{ u.id }}"></p>
+                    <p id="Urating-{{ u.id }}" value="{{ u.calProm }}">{{ u.calProm }}</p>
                 </div>
             </div>
         </div>
         <script>
-            calificacionPromedio = {{ u.calificacion_promedio }};
             document.addEventListener('DOMContentLoaded', function () {
-                document.getElementById('rating-{{ u.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas(calificacionPromedio)}`;
+                document.getElementById('Urating-{{ u.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas({{ u.calProm }})} {{ u.calProm }}`;
             });
         </script>
         {% endfor %}
     </div>
 
     <!-- Facultades -->
-    <h2 class="my-4">Facultades Mejor Calificadas</h2>
+    <h2 class="my-4">Facultades Mejor Calificadas <i class='bx bx-trophy nav_icon'></i></h2>
     <div class="row">
         {% for f in facultades %}
         <div class="col-md-4">
-            <div class="card mb-4">
+            <div class="card mb-4 card-tf" >
                 <img src="{{ f.imagen_url }}" class="card-img-top" alt="Facultad" style="height: 200px; object-fit: cover;">
                 <div class="card-body">
                     <h5 class="card-title">{{ f.nombre }}</h5>
                     <p class="card-text">{{ f.descripcion }}</p>
-                    <p id="rating-{{ f.id }}"></p>
+                    <p id="ratingF-{{ f.id }}"></p>
                 </div>
             </div>
         </div>
         <script>
-            calProm = {{ f.calificacion_promedio }};
             document.addEventListener('DOMContentLoaded', function () {
-                document.getElementById('rating-{{ f.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas(calProm)}`;
+                document.getElementById('ratingF-{{ f.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas({{ f.calProm }})} {{ f.calProm }}`;
             });
         </script>
         {% endfor %}
     </div>
 
     <!-- Carreras -->
-    <h2 class="my-4">Carreras Mejor Calificadas y Menor Costo</h2>
+    <h2 class="my-4">Carreras Mejor Calificadas <i class='bx bx-trophy nav_icon'></i>  y Menor Costo <i class='bx bx-coin-stack nav_icon'></i></h2>
     <div class="row">
         {% for c in carreras %}
         <div class="col-md-4">
-            <div class="card mb-4">
+            <div class="card mb-4 card-tf">
                 <img src="{{ c.imagen_url }}" class="card-img-top" alt="Carrera" style="height: 200px; object-fit: cover;">
                 <div class="card-body">
                     <h5 class="card-title">{{ c.nombre }}</h5>
                     <p class="card-text">{{ c.descripcion }}</p>
-                    <p id="rating-{{ c.id }}"></p>
+                    <p class="card-text">Inscripción: {{ c.modalidad_inscripcion }}</p>
+                    <p class="card-text">Duración: {{ c.duracion }}</p>
+                    <p id="ratingC-{{ c.id }}"></p>
                     <p><strong>Costo Matrícula:</strong> {{ c.costo_matricula }}</p>
                 </div>
             </div>
         </div>
         <script>
-            calProm = {{ c.calificacion_promedio }};
             document.addEventListener('DOMContentLoaded', function () {
-                document.getElementById('rating-{{ c.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas(calProm)}`;
+                document.getElementById('ratingC-{{ c.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas({{ c.calProm }})} {{ c.calProm }}`;
             });
         </script>
         {% endfor %}

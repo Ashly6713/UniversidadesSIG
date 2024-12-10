@@ -18,18 +18,20 @@
                     {% endif %}
                 </div>
                 {% endfor %}
-                
-                <!-- Hidden fields for latitude and longitude -->
                 <input type="hidden" id="id_latitud" name="latitud" value="{{ facultad.latitud|default:'' }}">
                 <input type="hidden" id="id_longitud" name="longitud" value="{{ facultad.longitud|default:'' }}">
     
                 <button type="submit" class="btn btn-primary btn-submit">
-                    Guardar <i class="bx bx-plus"></i>
+                    <i class="bx bx-save"> Guardar </i>
                 </button>
             </form>
         </div>
         <div class="col-md-7">
+            <div class="alert alert-primary" role="alert">
+                Arrastra el ícono a la ubicación correcta en el mapa.
+              </div>
             <div id="map" class="map-container"></div>
+            <a href="{% url 'facultad_list' %}" style="color:  rgb(0, 115, 255);"><i class="bx bx-arrow-back"></i>Volver a la lista</a>
         </div>
     </div>
 
@@ -54,6 +56,6 @@
 </script>
 
 
-<a href="{% url 'facultad_list' %}" style="color:  rgb(0, 208, 255);"><i class="bx bx-arrow-back"></i>Volver a la lista</a>
+
 {% endblock %}
 

@@ -6,9 +6,7 @@
 </div>
 <div id="map"  style="height: 92vh;"></div>
 
-
 <div class="sidebar-container">
-    <!-- Botón para abrir/cerrar la barra -->
     <button id="toggle-sidebar" class="sidebar-toggle-btn">
       <i class='bx bx-chevron-right'></i>
     </button>
@@ -45,7 +43,7 @@
                 <div class="accordion-body">
                     <!-- Filtros -->
                     <div class="filter-section">
-                        <form method="get" class="mb-4">
+                        <form method="get" class="mb-4" id="buscar-form">
                             <div class="row">
                                 <div class="col-md-4" style="width: 100%;">
                                     <input type="text" name="nombre" class="form-control" placeholder="Buscar por nombre" value="{{ request.GET.nombre }}">
@@ -70,14 +68,11 @@
     </div>
 </div>
   
-
-
 <script>
 
     var universidades = {{ universidades_json|safe }};
-    var map = L.map('map').setView([-17.9677, -67.11], 15);
+    var map = L.map('map').setView([-17.9677, -67.11], 14);
 
-    // Cargar la capa base
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     }).addTo(map);
@@ -87,12 +82,25 @@
     const markerGroup = L.layerGroup().addTo(map);
     const publicasLayer = L.layerGroup();
     const privadasLayer = L.layerGroup();
+    const iconTodas = '<img src="/media/marker/universityR.png" style="width: 25px; height: 25px; vertical-align: middle; margin-right: 5px;">';
+    const iconPublicas = '<img src="/media/marker/universityP.png" style="width: 25px; height: 25px; vertical-align: middle; margin-right: 5px;">';
+    const iconPrivadas = '<img src="/media/marker/universityS.png" style="width: 25px; height: 25px; vertical-align: middle; margin-right: 5px;">';
 // Mostrar puntos en el mapa
 universidades.forEach(uni => {
     if (uni.latitud && uni.longitud) {
-        const marker = L.marker([uni.latitud, uni.longitud], { icon: uIcon, title: uni.nombre }).addTo(map);
+        const marker = L.marker([uni.latitud, uni.longitud], {  icon: uni.tipo === 'pública' ? uIconP : uIcon, title: uni.nombre }).addTo(map);
         marker.on('click', () => showCard(uni));
-        // Añadir el marcador al grupo
+        const popupContent = `
+        <div style="font-size: 12px;">
+            <p>${uni.nombre} 
+            <strong>Tipo:</strong> ${uni.tipo}</p>
+        </div>
+        `;
+        const popup = L.popup({ autoClose: false, closeOnClick: false })
+            .setLatLng([uni.latitud, uni.longitud])
+            .setContent(popupContent);
+         marker.bindPopup(popup); 
+
         markerGroup.addLayer(marker);
         if (uni.tipo === "pública") {
         publicasLayer.addLayer(marker);
@@ -101,13 +109,13 @@ universidades.forEach(uni => {
         }
     }
 });
-
+    markerGroup.addTo(map);
 // Mostrar detalles en la tarjeta
 function showCard(uni) {
     document.getElementById('card-info').classList.remove('d-none');
     document.getElementById('card-title').textContent = uni.nombre;
     document.getElementById('card-description').textContent = uni.descripcion;
-    document.getElementById('card-rating').innerHTML  = `${generarEstrellas(uni.calificacion_promedio) || 'No disponible'}<br>`;
+    document.getElementById('card-rating').innerHTML  = `${generarEstrellas(uni.calificacion_promedio) || 'No disponible'} ${uni.calificacion_promedio}<br>`;
     const button = document.querySelector('.favorite-btn');
     if (uni.es_favorita){
         document.getElementById('marcar').innerHTML =`
@@ -128,29 +136,28 @@ function showCard(uni) {
     document.getElementById('calificar').innerHTML = `
             <form id="calificacion-form">
                 <div class="row">
+                    <div class="col-md-3">
+                        Calificar
+                    </div>
                     <div class="col-md-9">
                         <div id="calificacion" class="div-cal">
-                            <input type="radio" id="star1" name="calificacion" value="5">
-                            <label for=star1" class="star"></label>
+                            <input type="radio" id="star1" name="calificacion" value="5" onclick="submitCalificacion('${'Universidad'}', ${uni.id})">
+                            <label for="star1" class="star"></label>
 
-                            <input type="radio" id="star2" name="calificacion" value="4">
+                            <input type="radio" id="star2" name="calificacion" value="4" onclick="submitCalificacion('${'Universidad'}', ${uni.id})">
                             <label for="star2" class="star"></label>
 
-                            <input type="radio" id="star3" name="calificacion" value="3">
+                            <input type="radio" id="star3" name="calificacion" value="3" onclick="submitCalificacion('${'Universidad'}', ${uni.id})">
                             <label for="star3" class="star"></label>
 
-                            <input type="radio" id="star4" name="calificacion" value="2">
+                            <input type="radio" id="star4" name="calificacion" value="2" onclick="submitCalificacion('${'Universidad'}', ${uni.id})">
                             <label for="star4" class="star"></label>
 
-                            <input type="radio" id="star5" name="calificacion" value="1">
+                            <input type="radio" id="star5" name="calificacion" value="1" onclick="submitCalificacion('${'Universidad'}', ${uni.id})">
                             <label for="star5" class="star"></label>
                         </div>
                     </div> 
-                    <div class="col-md-3">
-                        <button type="button"class="btn btn-outline-secondary"  onclick="submitCalificacion('${'Universidad'}', ${uni.id})" title="Calificar">
-                            <i class="bx bx-check"></i>
-                            </button>
-                    </div>
+                    
                 </div>
             </form>
         `;
@@ -162,19 +169,16 @@ function showCard(uni) {
 // Evento de clic en el mapa
 map.on('click', function (e) {
     const { lat, lng } = e.latlng;
-
     // Actualizar campos de latitud y longitud
     document.getElementById('lat-input').value = lat.toFixed(6);
     document.getElementById('lon-input').value = lng.toFixed(6);
     document.getElementById('selected-coordinates').textContent = `Latitud: ${lat.toFixed(6)}, Longitud: ${lng.toFixed(6)}`;
 
-    // Añadir o mover marcador
     if (selectedMarker) {
         selectedMarker.setLatLng([lat, lng]);
     } else {
         selectedMarker = L.marker([lat, lng]).addTo(map);
     }
-
     // Dibujar o actualizar el círculo de radio
     const radio = parseFloat(document.getElementById('radio-input').value) || 0;
     if (radiusCircle) {
@@ -189,7 +193,6 @@ map.on('click', function (e) {
         }).addTo(map);
     }
 });
-
 // actualizar el radio del círculo cuando cambie el valor del input
 document.getElementById('radio-input').addEventListener('input', function () {
     const radio = parseFloat(this.value) || 0;
@@ -199,43 +202,66 @@ document.getElementById('radio-input').addEventListener('input', function () {
 });
 
 
-// Añadir el control de búsqueda
+// control de búsqueda
 const searchControl = new L.Control.Search({
         layer: markerGroup,      
         position: 'topleft',    
-        propertyName: 'title',     // Buscar en la propiedad 'title'
+        propertyName: 'title',     
         zoom: 18,                  
-        marker: false              // No añadir un marcador adicional
+        marker: false             
     });
 
-    // Abrir el popup del marcador encontrado
+    //popup del marcador encontrado
     searchControl.on('search:locationfound', function(e) {
-        e.layer.openPopup(); // Abre el popup del marcador encontrado
+        e.layer.openPopup(); 
     });
     map.addControl(searchControl);
 
 // Crear un control de capas para alternar visibilidad
 const overlays = {
-    "Todas": markerGroup,
-    "Públicas": publicasLayer,
-    "Privadas": privadasLayer
+    [`${iconTodas} Todas`]: markerGroup,
+    [`${iconPublicas} Públicas`]: publicasLayer,
+    [`${iconPrivadas} Privadas`]: privadasLayer
 };
-L.control.layers(overlays,null, { position: 'topleft',collapsed: true }).addTo(map);
+L.control.layers(overlays,null, { position: 'topleft',collapsed: false  }).addTo(map);
+
+// Crear un botón de control para ocultar/mostrar los popups
+const popupToggleControl = L.Control.extend({
+    options: { position: 'topleft' }, 
+
+    onAdd: function(map) {
+        const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control popup-toggle');
+        button.innerHTML = '<i class="bx bx-show"></i> Mostrar Info'; // Ícono inicial de "mostrar"
+        L.DomEvent.on(button, 'click', () => {
+            if (button.innerHTML.includes('bx-hide')) {
+                button.innerHTML = '<i class="bx bx-show"></i> Mostrar Info'; // Cambiar ícono a "ocultar"
+                closePopups(markerGroup);
+                closePopups(publicasLayer);
+                closePopups(privadasLayer);
+            } else {
+                button.innerHTML = '<i class="bx bx-hide"></i> Ocultar Info'; // Cambiar ícono a "mostrar"
+                openPopups(markerGroup);
+                openPopups(publicasLayer);
+                openPopups(privadasLayer);
+            }
+        });
+
+        return button;
+    }
+});
+
+// Añadir el control de ocultar/mostrar popups al mapa
+map.addControl(new popupToggleControl());
 </script>
 
-
-
-
-
-  
   <!-- Modal -->
   <div class="modal fade" id="exampleModal"  tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" style="max-width: 90%;" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">
-            <a href="{% url 'universidad_create' %}" class="btn btn-outline-info " data-bs-toggle="tooltip" data-bs-placement="top" title="Crear nueva">
-                <i class='bx bxs-buildings nav_icon'></i><i class="bx bx-plus"></i>
+            <a href="{% url 'universidad_create' %}" class="btn btn-primary " data-bs-toggle="tooltip" data-bs-placement="top" title="Crear nueva">
+                Crear Nueva <i class="bx bx-plus"></i>
             </a>
           </h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -281,7 +307,5 @@ L.control.layers(overlays,null, { position: 'topleft',collapsed: true }).addTo(m
       </div>
     </div>
   </div>
-
-
 
 {% endblock %}

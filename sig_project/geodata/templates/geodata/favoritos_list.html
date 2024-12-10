@@ -10,7 +10,7 @@
         <!-- Universidades favoritas -->
         {% for universidad in universidades %}
         <div class="col-md-4">
-            <div class="card mb-4">
+            <div class="card mb-4 card-tf">
                 <img src="{{ universidad.imagen_url }}" class="card-img-top" alt="{{ universidad.nombre }}" style="height: 200px; object-fit: cover;">
                 <div class="card-body">
                     <h5 class="card-title">{{ universidad.nombre }}</h5>
@@ -20,9 +20,8 @@
             </div>
         </div>
         <script>
-            calProm = {{ universidad.calificacion_promedio }};
             document.addEventListener('DOMContentLoaded', function () {
-                document.getElementById('rating-{{ universidad.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas(calProm)}`;
+                document.getElementById('rating-{{ universidad.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas({{ universidad.calProm }})} {{ universidad.calProm }}`;
             });
         </script>
         {% endfor %}
@@ -30,7 +29,7 @@
         <!-- Facultades favoritas -->
         {% for facultad in facultades %}
         <div class="col-md-4">
-            <div class="card mb-4">
+            <div class="card mb-4 card-tf">
                 <img src="{{ facultad.imagen_url }}" class="card-img-top" alt="{{ facultad.nombre }}" style="height: 200px; object-fit: cover;">
                 <div class="card-body">
                     <h5 class="card-title">{{ facultad.nombre }}</h5>
@@ -40,9 +39,8 @@
             </div>
         </div>
         <script>
-            calProm = {{ facultad.calificacion_promedio }};
             document.addEventListener('DOMContentLoaded', function () {
-                document.getElementById('Frating-{{ facultad.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas(calProm)}`;
+                document.getElementById('Frating-{{ facultad.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas({{ facultad.calProm }})} {{ facultad.calProm }}`;
             });
         </script>
         {% endfor %}
@@ -50,7 +48,7 @@
         <!-- Carreras favoritas -->
         {% for carrera in carreras %}
         <div class="col-md-4">
-            <div class="card mb-4">
+            <div class="card mb-4 card-tf">
                 <img src="{{ carrera.imagen_url }}" class="card-img-top" alt="{{ carrera.nombre }}" style="height: 200px; object-fit: cover;">
                 <div class="card-body">
                     <h5 class="card-title">{{ carrera.nombre }}</h5>
@@ -63,9 +61,8 @@
             </div>
         </div>
         <script>
-            calProm = {{ carrera.calificacion_promedio }};
             document.addEventListener('DOMContentLoaded', function () {
-                document.getElementById('rating-{{ carrera.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas(calProm)}`;
+                document.getElementById('rating-{{ carrera.id }}').innerHTML = `<strong>Calificación:</strong> ${generarEstrellas({{ carrera.calProm }})} {{ carrera.calProm }}`;
             });
         </script>
         {% endfor %}
