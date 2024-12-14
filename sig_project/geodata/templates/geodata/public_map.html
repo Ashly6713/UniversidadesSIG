@@ -44,7 +44,7 @@
 <!-- Sección 2: Mapa interactivo -->
 <section class="map-section">
     <div id="map-container">
-        <div id="map" style="width: 100%; height: 100vh;"></div>
+        <div id="map" style="width: 100%; height: 98vh;"></div>
     </div>
 </section>
 
@@ -264,6 +264,14 @@ map.addControl(searchControl);
     animateCount(document.getElementById('uCount'), uCount);
     animateCount(document.getElementById('fCount'), fCount);
     animateCount(document.getElementById('cCount'), cCount);
+
+
+    var miniMapLayer = L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+);
+var miniMap = new L.Control.MiniMap(miniMapLayer, {
+  toggleDisplay: true,
+}).addTo(map);
 </script>
 
 {% endblock %}

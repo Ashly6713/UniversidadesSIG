@@ -297,7 +297,6 @@ def carrera_list(request):
 
 @login_required
 def carrera_create_edit(request, pk=None):
-
     if pk:
         carrera = get_object_or_404(Carrera, pk=pk)
     else:
@@ -318,7 +317,18 @@ def carrera_create_edit(request, pk=None):
     else:
         form = CarreraForm(instance=carrera)
 
-    return render(request, 'geodata/carrera_form.html', {'form': form, 'carrera': carrera})
+    # Relaciones Facultad -> Universidad
+    relaciones_facultades = {
+        str(facultad.id): facultad.universidad.id for facultad in Facultad.objects.select_related('universidad')
+    }
+
+    return render(request, 'geodata/carrera_form.html', {
+        'form': form,
+        'carrera': carrera,
+        'relaciones_facultades': json.dumps(relaciones_facultades)  # Convertir a JSON
+    })
+
+
 
 @login_required
 def carrera_delete(request, pk):

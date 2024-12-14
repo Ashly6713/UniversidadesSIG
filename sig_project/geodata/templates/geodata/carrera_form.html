@@ -4,37 +4,71 @@
 <div  style="background: rgba(8, 52, 97, 0.9); height: 8vh; width: 100%;">
 </div>
 
-    <div class="row form-row">
-        <div class="col-md-5">
-            <form method="POST" class="form-create" enctype="multipart/form-data">
-                {% csrf_token %}
-                <h2>{% if carrera.pk %}Editar{% else %}Crear{% endif %} carrera</h2>
-                {% for field in form %}
-                <div class="form-group-inline">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label_tag }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                    <div class="error">{{ field.errors }}</div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-                
-                <input type="hidden" id="id_latitud" name="latitud" value="{{ carrera.latitud|default:'' }}">
-                <input type="hidden" id="id_longitud" name="longitud" value="{{ carrera.longitud|default:'' }}">
-    
-                <button type="submit" class="btn btn-primary btn-submit">
-                    <i class="bx bx-save"> Guardar </i>
-                </button>
-            </form>
-        </div>
-        <div class="col-md-7">
-            <div class="alert alert-primary" role="alert">
-                Arrastra el ícono a la ubicación correcta en el mapa.
-              </div>
-            <div id="map" class="map-container"></div>
-            <a href="{% url 'carrera_list' %}" style="color:  rgb(0, 115, 255);"><i class="bx bx-arrow-back"></i>Volver a la lista</a>
-        </div>
+<div class="row form-row">
+    <div class="col-md-5">
+        <form method="POST" class="form-create" enctype="multipart/form-data">
+            {% csrf_token %}
+            <h2>{% if carrera.pk %}Editar{% else %}Crear{% endif %} carrera</h2>
+            {% for field in form %}
+            <div class="form-group-inline">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label_tag }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="error">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <!-- Campo oculto que guarda el valor de la universidad -->
+<input type="hidden" id="hidden_universidad" name="universidad" value="{{ carrera.universidad.id }}">
+            
+            <input type="hidden" id="id_latitud" name="latitud" value="{{ carrera.latitud|default:'' }}">
+            <input type="hidden" id="id_longitud" name="longitud" value="{{ carrera.longitud|default:'' }}">
+
+            <button type="submit" class="btn btn-primary btn-submit">
+                <i class="bx bx-save"> Guardar </i>
+            </button>
+        </form>
     </div>
+    <div class="col-md-7">
+        <div class="alert alert-primary" role="alert">
+            Arrastra el ícono a la ubicación correcta en el mapa.
+          </div>
+        <div id="map" class="map-container"></div>
+        <a href="{% url 'carrera_list' %}" style="color:  rgb(0, 115, 255);"><i class="bx bx-arrow-back"></i>Volver a la lista</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Relaciones Facultad -> Universidad desde Django
+        const relacionesFacultades = {{ relaciones_facultades|safe }}; // Ya es JSON válido
+
+        // Obtén los campos de facultad y universidad
+        const facultadField = document.querySelector('[name="facultad"]');
+        const universidadField = document.querySelector('[name="universidad"]');
+
+        const hiddenUniversidadField = document.getElementById("hidden_universidad");
+
+facultadField.addEventListener("change", function() {
+    const facultadId = facultadField.value;
+
+    // Si hay una facultad seleccionada, actualiza la universidad
+    if (facultadId && relacionesFacultades[facultadId]) {
+        const universidadId = relacionesFacultades[facultadId];
+        universidadField.value = universidadId; // Carga la universidad relacionada
+        hiddenUniversidadField.value = universidadId; // Actualiza el campo oculto
+        universidadField.disabled = true; // Deshabilita el select de universidad
+    } else {
+        universidadField.disabled = false; // Habilita el select de universidad si no hay facultad
+        hiddenUniversidadField.value = ''; // Limpia el campo oculto
+    }
+});
+
+    });
+
+
+    
+</script>
 
 
 <script>
